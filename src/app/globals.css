@@ -1,0 +1,175 @@
+/* === FONT FACES === */
+@font-face {
+  font-family: 'Redaction';
+  src: url('/fonts/redaction/Redaction-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Redaction';
+  src: url('/fonts/redaction/Redaction-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Redaction';
+  src: url('/fonts/redaction/Redaction-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Redaction 20';
+  src: url('/fonts/redaction/Redaction20-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Redaction 20';
+  src: url('/fonts/redaction/Redaction20-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Redaction 20';
+  src: url('/fonts/redaction/Redaction20-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Redaction 10';
+  src: url('/fonts/redaction/Redaction10-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Redaction 35';
+  src: url('/fonts/redaction/Redaction35-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Redaction 50';
+  src: url('/fonts/redaction/Redaction50-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Redaction 70';
+  src: url('/fonts/redaction/Redaction70-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Redaction 100';
+  src: url('/fonts/redaction/Redaction100-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'W95FA';
+  src: url('/fonts/w95fa.woff2') format('woff2'),
+       url('/fonts/w95fa.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* === DESIGN TOKENS === */
+:root {
+  /* Master pixel unit — controls all window chrome sizing */
+  --px: 3px;
+
+  --color-black: #000000;
+  --color-green: #00ff41;
+  --color-win95-bg: #c0c0c0;
+  --color-win95-dark: #808080;
+  --color-win95-lighter: #dfdfdf;
+  --color-win95-light: #ffffff;
+  --color-win95-blue: #000080;
+  --color-win95-darkest: #000000;
+  --color-red: #ff2d2d;
+
+  --font-display: 'Redaction', 'Georgia', serif;
+  --font-title: 'Redaction 20', 'Georgia', serif;
+  --font-system: 'W95FA', 'MS Sans Serif', 'Segoe UI', 'Arial', sans-serif;
+}
+
+/* === RESET === */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  max-width: 100vw;
+  overflow: hidden;
+}
+
+body {
+  background: var(--color-win95-bg);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* === WIN95 SCROLLBAR === */
+[data-win95-scroll] {
+  scrollbar-width: none; /* hide Firefox default */
+}
+
+[data-win95-scroll]::-webkit-scrollbar {
+  width: calc(var(--px) * 6);
+}
+
+[data-win95-scroll]::-webkit-scrollbar-track {
+  background: var(--color-win95-bg);
+  border-left: var(--px) solid var(--color-win95-dark);
+}
+
+[data-win95-scroll]::-webkit-scrollbar-thumb {
+  background: var(--color-win95-bg);
+  border: var(--px) solid;
+  border-color: var(--color-win95-light) var(--color-win95-darkest) var(--color-win95-darkest) var(--color-win95-light);
+  box-shadow:
+    inset calc(var(--px) * -1) calc(var(--px) * -1) 0 var(--color-win95-dark),
+    inset var(--px) var(--px) 0 var(--color-win95-lighter);
+}
+
+[data-win95-scroll]::-webkit-scrollbar-button {
+  display: block;
+  height: calc(var(--px) * 6);
+  background: var(--color-win95-bg);
+  border: var(--px) solid;
+  border-color: var(--color-win95-light) var(--color-win95-darkest) var(--color-win95-darkest) var(--color-win95-light);
+  box-shadow:
+    inset calc(var(--px) * -1) calc(var(--px) * -1) 0 var(--color-win95-dark),
+    inset var(--px) var(--px) 0 var(--color-win95-lighter);
+}

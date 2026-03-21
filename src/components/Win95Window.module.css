@@ -1,0 +1,48 @@
+.window {
+  position: fixed;
+  background: var(--color-win95-bg);
+  border: 2px solid;
+  border-color: var(--color-win95-light) var(--color-win95-dark) var(--color-win95-dark) var(--color-win95-light);
+  box-shadow:
+    inset 1px 1px 0 var(--color-win95-light),
+    inset -1px -1px 0 var(--color-win95-darkest),
+    2px 2px 0 rgba(0, 0, 0, 0.4);
+  padding: 3px;
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+  transition: none;
+}
+
+.windowVisible {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.titleBar {
+  background: var(--color-win95-blue);
+  padding: 3px 6px;
+  display: flex;
+  align-items: center;
+  user-select: none;
+}
+
+.titleText {
+  color: var(--color-win95-light);
+  font-family: var(--font-system);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.content {
+  background: var(--color-black);
+  border: 2px solid;
+  border-color: var(--color-win95-dark) var(--color-win95-light) var(--color-win95-light) var(--color-win95-dark);
+  margin-top: 2px;
+  overflow: hidden;
+}

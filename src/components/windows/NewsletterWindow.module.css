@@ -1,0 +1,49 @@
+.newsletter {
+  padding: 24px;
+  font-family: var(--font-display);
+  color: var(--color-green);
+}
+
+.prompt {
+  font-family: monospace;
+  font-size: 14px;
+  color: var(--color-green);
+  margin-bottom: 16px;
+}
+
+.inputRow {
+  display: flex;
+  gap: 0;
+}
+
+.input {
+  flex: 1;
+  background: var(--color-black);
+  border: 2px solid;
+  border-color: var(--color-win95-dark) var(--color-win95-light) var(--color-win95-light) var(--color-win95-dark);
+  color: var(--color-green);
+  font-family: monospace;
+  font-size: 14px;
+  padding: 6px 10px;
+  outline: none;
+}
+
+.input::placeholder {
+  color: rgba(0, 255, 65, 0.4);
+}
+
+.submitButton {
+  font-family: var(--font-system);
+  font-size: 12px;
+  padding: 6px 16px;
+  background: var(--color-win95-bg);
+  border: 2px solid;
+  border-color: var(--color-win95-light) var(--color-win95-dark) var(--color-win95-dark) var(--color-win95-light);
+  color: var(--color-black);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.submitButton:active {
+  border-color: var(--color-win95-dark) var(--color-win95-light) var(--color-win95-light) var(--color-win95-dark);
+}

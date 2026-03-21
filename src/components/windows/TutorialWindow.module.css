@@ -1,0 +1,78 @@
+.tutorial {
+  padding: 20px 24px;
+  font-family: var(--font-display);
+  color: var(--color-green);
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+}
+
+.stepHeader {
+  font-family: var(--font-system);
+  font-size: 12px;
+  color: var(--color-win95-bg);
+  margin-bottom: 16px;
+}
+
+.stepContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.stepTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-green);
+  margin-bottom: 8px;
+}
+
+.stepText {
+  font-size: 15px;
+  color: #d0d0d0;
+  line-height: 1.5;
+}
+
+.progressBar {
+  width: 100%;
+  height: 20px;
+  background: var(--color-win95-bg);
+  border: 2px solid;
+  border-color: var(--color-win95-dark) var(--color-win95-light) var(--color-win95-light) var(--color-win95-dark);
+  margin: 16px 0;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-win95-blue);
+  transition: width 0.2s ease-out;
+}
+
+.nav {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.navButton {
+  font-family: var(--font-system);
+  font-size: 12px;
+  padding: 4px 20px;
+  background: var(--color-win95-bg);
+  border: 2px solid;
+  border-color: var(--color-win95-light) var(--color-win95-dark) var(--color-win95-dark) var(--color-win95-light);
+  color: var(--color-black);
+  cursor: pointer;
+}
+
+.navButton:active {
+  border-color: var(--color-win95-dark) var(--color-win95-light) var(--color-win95-light) var(--color-win95-dark);
+}
+
+.navButtonDisabled {
+  color: var(--color-win95-dark);
+  cursor: default;
+}

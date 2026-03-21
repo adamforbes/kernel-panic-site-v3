@@ -1,0 +1,95 @@
+.gallery {
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 320px;
+  position: relative;
+}
+
+.cardStack {
+  position: relative;
+  width: 220px;
+  height: 300px;
+}
+
+.card {
+  position: absolute;
+  width: 200px;
+  height: 280px;
+  background: var(--color-win95-bg);
+  border: 2px solid;
+  border-color: var(--color-win95-light) var(--color-win95-dark) var(--color-win95-dark) var(--color-win95-light);
+  border-radius: 0;
+  overflow: hidden;
+  transition: transform 0.15s ease-out;
+  cursor: default;
+}
+
+.card:hover {
+  z-index: 10 !important;
+}
+
+.cardTitleBar {
+  background: var(--color-win95-blue);
+  padding: 2px 5px;
+  font-family: var(--font-system);
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+}
+
+.cardBody {
+  display: flex;
+  height: calc(100% - 22px);
+}
+
+.cardArt {
+  width: 50%;
+  background: var(--color-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.pixelArt {
+  color: var(--color-green);
+  font-size: 48px;
+  font-weight: 700;
+  font-family: monospace;
+  text-shadow: 0 0 6px rgba(0, 255, 65, 0.5);
+  line-height: 1;
+  image-rendering: pixelated;
+}
+
+.cardText {
+  width: 50%;
+  background: var(--color-win95-bg);
+  padding: 8px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  color: var(--color-black);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-left: 2px solid;
+  border-color: var(--color-win95-dark);
+}
+
+.cardExample {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-win95-dark);
+  font-style: italic;
+  font-size: 10px;
+}
+
+.cardType {
+  font-family: var(--font-system);
+  font-size: 10px;
+  color: var(--color-win95-dark);
+  padding: 2px 5px;
+  background: var(--color-win95-bg);
+  border-top: 1px solid var(--color-win95-dark);
+}

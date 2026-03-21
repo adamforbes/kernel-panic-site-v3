@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx next:*)",
+      "WebSearch",
+      "WebFetch(domain:mckltype.com)",
+      "Bash(cp /tmp/w95fa_extracted/w95fa.woff2 /Users/adamforbes/Documents/kernel-panic-site-v3/public/fonts/w95fa.woff2)",
+      "Bash(cp /tmp/w95fa_extracted/w95fa.woff /Users/adamforbes/Documents/kernel-panic-site-v3/public/fonts/w95fa.woff)",
+      "Bash(cp /Users/adamforbes/Downloads/redaction/Redaction_2_001/webfonts/Redaction_20-Regular.woff2 /Users/adamforbes/Documents/kernel-panic-site-v3/public/fonts/redaction/Redaction20-Regular.woff2)",
+      "Bash(cp /Users/adamforbes/Downloads/redaction/Redaction_2_001/webfonts/Redaction_20-Bold.woff2 /Users/adamforbes/Documents/kernel-panic-site-v3/public/fonts/redaction/Redaction20-Bold.woff2)",
+      "Bash(cp /Users/adamforbes/Downloads/redaction/Redaction_2_001/webfonts/Redaction_20-Italic.woff2 /Users/adamforbes/Documents/kernel-panic-site-v3/public/fonts/redaction/Redaction20-Italic.woff2)",
+      "Bash(cp /Users/adamforbes/Downloads/redaction/Redaction_2_001/webfonts/Redaction_35-Italic.woff2 /Users/adamforbes/Documents/kernel-panic-site-v3/public/fonts/redaction/Redaction35-Italic.woff2)",
+      "Bash(cp /Users/adamforbes/Downloads/redaction/Redaction_2_001/webfonts/Redaction_70-Italic.woff2 /Users/adamforbes/Documents/kernel-panic-site-v3/public/fonts/redaction/Redaction70-Italic.woff2)",
+      "Bash(python3 -c \":*)"
+    ]
+  }
+}

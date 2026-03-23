@@ -173,7 +173,12 @@ export default function Home() {
               /* Split panel — two sunken bevels side by side */
               <div
                 className={styles.splitContainer}
-                onClick={() => !isLast && goNext()}
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = (e.clientX - rect.left) / rect.width;
+                  if (x < 0.25 && !isFirst) goBack();
+                  else if (!isLast) goNext();
+                }}
                 onMouseMove={handleContentMouseMove}
                 onMouseLeave={handleContentMouseLeave}
               >
@@ -218,7 +223,12 @@ export default function Home() {
                   <div
                     ref={contentRef}
                     className={styles.content}
-                    onClick={() => !isLast && goNext()}
+                    onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const x = (e.clientX - rect.left) / rect.width;
+                      if (x < 0.25 && !isFirst) goBack();
+                      else if (!isLast) goNext();
+                    }}
                     onMouseMove={handleContentMouseMove}
                     onMouseLeave={handleContentMouseLeave}
                   >

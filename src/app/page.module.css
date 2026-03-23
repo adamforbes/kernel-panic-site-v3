@@ -99,6 +99,7 @@
 .splitContainer {
   flex: 1;
   display: flex;
+  justify-content: space-between;
   gap: 0;
   min-height: 0;
   margin: calc(var(--px) * 6) calc(var(--px) * 5);
@@ -108,14 +109,23 @@
 }
 
 .splitPane {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   min-height: 0;
   min-width: 0;
+  height: 100%;
+  max-width: 50%;
 }
 
 .splitPane .bevelInner1 {
   margin: 0;
+  flex: 1;
+}
+
+.splitPane .slideImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .splitContainer .ditherOverlay {
@@ -189,6 +199,7 @@
   height: 100%;
   object-fit: cover;
 }
+
 
 /* --- KERNEL PANIC Logo --- */
 .logoContainer {
@@ -279,107 +290,171 @@
   line-height: 1.6;
 }
 
-/* --- Slide 2: Card showcase --- */
-.slideCards {
+/* --- Slide 3: Card carousel --- */
+.slideCarousel {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 8%;
+  gap: clamp(24px, 4vw, 60px);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  background: #008080;
 }
 
-.cardStack {
+.slideCarousel::-webkit-scrollbar {
+  display: none;
+}
+
+.carouselItem {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  max-width: 360px;
-  width: 50%;
-}
-
-/* Individual card — Win95 mini-window */
-.card {
-  background: var(--color-win95-bg);
-  border: 2px solid;
-  border-color: var(--color-win95-light) var(--color-win95-darkest) var(--color-win95-darkest) var(--color-win95-light);
-  box-shadow:
-    inset 1px 1px 0 var(--color-win95-lighter),
-    inset -1px -1px 0 var(--color-win95-dark);
-}
-
-.cardTitleBar {
-  background: var(--color-win95-blue);
-  padding: 3px 6px;
-  font-family: var(--font-system);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-win95-light);
-  white-space: nowrap;
-}
-
-.cardContent {
-  background: var(--color-black);
-  border: 2px solid;
-  border-color: var(--color-win95-dark) var(--color-win95-light) var(--color-win95-light) var(--color-win95-dark);
-  margin: 3px;
-  padding: 20px;
-  display: flex;
   align-items: center;
-  justify-content: center;
+  gap: clamp(12px, 1.5vw, 20px);
+  scroll-snap-align: center;
+  width: clamp(200px, 22vw, 300px);
 }
 
-.cardSymbol {
+/* --- Card flipper (two-sided) --- */
+.card3d {
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  perspective: 800px;
+}
+
+.card3dSquare {
+  aspect-ratio: 1 / 1;
+}
+
+.cardInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: rotateY(180deg);
+  border-radius: 12px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    0 1px 4px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.4s ease;
+}
+
+/* Flip-in animation */
+.cardInner.flipped {
+  animation: cardFlipIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* After flip, JS drives transform directly */
+.cardInner.settled {
+  animation: none;
+  transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform 0.25s ease-out, box-shadow 0.4s ease;
+}
+
+/* Faster follow when actively hovered */
+.cardInner.settled.hovering {
+  transition: transform 0.08s ease-out, box-shadow 0.4s ease;
+}
+
+/* Stagger each card's flip */
+.carouselItem:nth-child(1) .cardInner.flipped { animation-delay: 0.1s; }
+.carouselItem:nth-child(2) .cardInner.flipped { animation-delay: 0.3s; }
+.carouselItem:nth-child(3) .cardInner.flipped { animation-delay: 0.5s; }
+.carouselItem:nth-child(4) .cardInner.flipped { animation-delay: 0.7s; }
+
+@keyframes cardFlipIn {
+  0%   { transform: rotateY(180deg); }
+  100% { transform: rotateY(0deg); }
+}
+
+.cardFace {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.cardFront {
+  /* Front face */
+}
+
+.cardBack {
+  transform: rotateY(180deg);
+}
+
+.card3dImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Lighting overlay — radial highlight follows cursor */
+.cardShine {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--shine-x, 50%) var(--shine-y, 50%),
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.05) 40%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+  mix-blend-mode: soft-light;
+}
+
+.cardShineVisible {
+  opacity: 1;
+}
+
+/* Subtle edge shadow for depth */
+.cardFront::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  pointer-events: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12),
+              inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.carouselLabel {
   font-family: var(--font-system);
-  font-size: 48px;
+  font-size: clamp(14px, 1.2vw, 18px);
   font-weight: 700;
   color: var(--color-green);
+  text-transform: uppercase;
   text-align: center;
-  line-height: 1.1;
-  text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+  text-shadow: 0 0 12px rgba(0, 255, 65, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.cardType {
-  font-family: var(--font-system);
-  font-size: 12px;
-  color: var(--color-black);
-  padding: 2px 6px 4px;
+.carouselLabelVisible {
+  opacity: 1;
 }
 
-/* Cyan card variant */
-.cardCyan {
-  border-color: #00ffff var(--color-win95-darkest) var(--color-win95-darkest) #00ffff;
+.carouselDesc {
+  font-family: var(--font-display);
+  font-size: clamp(11px, 1vw, 14px);
+  color: #a0a0a0;
+  text-align: center;
+  line-height: 1.5;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.cardTitleCyan {
-  background: #008b8b;
-}
-
-.cardContentCyan {
-  background: var(--color-black);
-  border: 2px solid;
-  border-color: #006666 #00ffff #00ffff #006666;
-  margin: 3px;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.cardAccessIcon {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #00ffff;
-  font-size: 24px;
-}
-
-.iconComputer {
-  font-size: 32px;
-}
-
-.iconWire {
-  color: #00ffff;
-  letter-spacing: -3px;
-  font-size: 14px;
+.carouselDescVisible {
+  opacity: 1;
 }
 
 /* --- Dither transition overlay --- */

@@ -9,6 +9,40 @@ const SPLIT_IMAGE_LEFT =
   'https://res.cloudinary.com/dkcuvaird/image/upload/v1774057297/hand-grabbing_kernal-panic_szoeuv.jpg';
 const SPLIT_IMAGE_RIGHT =
   'https://res.cloudinary.com/dkcuvaird/image/upload/v1774057296/hand-full-of-clickers_kernel-panic_rc4fd9.jpg';
+const CARD_PLACEHOLDER =
+  'https://res.cloudinary.com/dkcuvaird/image/upload/v1768415640/statement__2-1_evfouk.png';
+const CARD_BACK =
+  'https://res.cloudinary.com/dkcuvaird/image/upload/v1768415599/card-back_lnlye1.png';
+const CARD_BACK_TASK =
+  'https://res.cloudinary.com/dkcuvaird/image/upload/v1768417735/card-back_task_f0xo5c.png';
+
+const CAROUSEL_CARDS = [
+  {
+    label: 'Tasks',
+    desc: 'Tasks represent the user\'s requirements. Each player has their own pair of tasks and works on them in parallel!',
+    image: 'https://res.cloudinary.com/dkcuvaird/image/upload/v1768417762/task-16_pmqvfh.png',
+    back: CARD_BACK_TASK,
+    square: true,
+  },
+  {
+    label: 'Actions',
+    desc: 'Actions are operation cards that players use to edit storage counters. Everyone plays actions simultaneously in real time, as fast as they can!',
+    image: CARD_PLACEHOLDER,
+    square: false,
+  },
+  {
+    label: 'Bugs',
+    desc: 'Bugs are tricky actions with unexpected effects. Bugs apply to one of your private storage counters, just like statements.',
+    image: 'https://res.cloudinary.com/dkcuvaird/image/upload/v1768415593/bug-3_afurnf.png',
+    square: false,
+  },
+  {
+    label: 'Outages',
+    desc: 'Outages are even more dangerous than bugs. When you draw an outage, announce it to everyone and play it immediately! (It does not go into your hand.)',
+    image: 'https://res.cloudinary.com/dkcuvaird/image/upload/v1768415616/outage-2_ewi3nj.png',
+    square: false,
+  },
+];
 
 const CURSOR_SIZE = 96;
 const DITHER_DURATION = 200; // ms
@@ -43,6 +77,9 @@ export default function Home() {
   const [cursorVisible, setCursorVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [logoFont, setLogoFont] = useState(REDACTION_WEIGHTS[0]);
+  const [cardsFlipped, setCardsFlipped] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const contentRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -59,6 +96,84 @@ export default function Home() {
 
   const isFirst = currentSlide === 0;
   const isLast = currentSlide === totalSlides - 1;
+
+  const [cardsSettled, setCardsSettled] = useState(false);
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  const [tappedCard, setTappedCard] = useState<number | null>(null);
+
+  // Trigger card flip when arriving at the cards slide
+  useEffect(() => {
+    if (currentSlideId === 'cards') {
+      setCardsFlipped(false);
+      setCardsSettled(false);
+      const t1 = setTimeout(() => setCardsFlipped(true), 100);
+      const t2 = setTimeout(() => setCardsSettled(true), 1600);
+      return () => { clearTimeout(t1); clearTimeout(t2); };
+    } else {
+      setCardsFlipped(false);
+      setCardsSettled(false);
+      setHoveredCard(null);
+      setTappedCard(null);
+    }
+  }, [currentSlideId]);
+
+  // Per-card mouse tracking — tilt toward cursor + lighting
+  const handleCardMouseMove = useCallback((e: React.MouseEvent, index: number) => {
+    const el = cardRefs.current[index];
+    if (!el || !cardsSettled) return;
+    const rect = el.getBoundingClientRect();
+    // Normalized -1 to 1 from card center
+    const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    // Tilt: card tilts toward cursor (gravity pull)
+    const tiltY = nx * 12;  // max 12deg
+    const tiltX = -ny * 8;  // max 8deg, inverted for natural feel
+    el.style.setProperty('--tilt-x', `${tiltX}deg`);
+    el.style.setProperty('--tilt-y', `${tiltY}deg`);
+    // Shine position (percentage)
+    const shineX = ((e.clientX - rect.left) / rect.width) * 100;
+    const shineY = ((e.clientY - rect.top) / rect.height) * 100;
+    el.style.setProperty('--shine-x', `${shineX}%`);
+    el.style.setProperty('--shine-y', `${shineY}%`);
+    // Shadow shifts opposite to tilt
+    const shadowX = -nx * 8;
+    const shadowY = -ny * 8;
+    el.style.boxShadow = `${shadowX}px ${shadowY + 4}px 14px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.12)`;
+    setHoveredCard(index);
+  }, [cardsSettled]);
+
+  const handleCardMouseLeave = useCallback((index: number) => {
+    const el = cardRefs.current[index];
+    if (!el) return;
+    el.style.setProperty('--tilt-x', '0deg');
+    el.style.setProperty('--tilt-y', '0deg');
+    el.style.boxShadow = '';
+    setHoveredCard(null);
+  }, []);
+
+  // Mobile: tap to toggle tilt toward center
+  const handleCardTap = useCallback((index: number) => {
+    if (!isMobile || !cardsSettled) return;
+    const el = cardRefs.current[index];
+    if (!el) return;
+    if (tappedCard === index) {
+      // Un-tilt
+      el.style.setProperty('--tilt-x', '0deg');
+      el.style.setProperty('--tilt-y', '0deg');
+      el.style.setProperty('--shine-x', '50%');
+      el.style.setProperty('--shine-y', '30%');
+      el.style.boxShadow = '';
+      setTappedCard(null);
+    } else {
+      // Tilt toward viewer
+      el.style.setProperty('--tilt-x', '-6deg');
+      el.style.setProperty('--tilt-y', '0deg');
+      el.style.setProperty('--shine-x', '50%');
+      el.style.setProperty('--shine-y', '20%');
+      el.style.boxShadow = '0px 6px 16px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.12)';
+      setTappedCard(index);
+    }
+  }, [isMobile, cardsSettled, tappedCard]);
 
   // Mouse-velocity-driven logo flicker
   const lastMousePos = useRef({ x: 0, y: 0 });
@@ -146,9 +261,22 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [goBack, goNext]);
 
+  const [splitRatios, setSplitRatios] = useState<{ left: number; right: number }>({ left: 0, right: 0 });
+
+  const handleImageLoad = useCallback((side: 'left' | 'right', e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    const ratio = img.naturalWidth / img.naturalHeight;
+    setSplitRatios(prev => ({ ...prev, [side]: ratio }));
+  }, []);
+
+  const [inBackZone, setInBackZone] = useState(false);
+
   const handleContentMouseMove = useCallback((e: React.MouseEvent) => {
     setCursorPos({ x: e.clientX, y: e.clientY });
     setCursorVisible(true);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    setInBackZone(x < 0.25);
   }, []);
 
   const handleContentMouseLeave = useCallback(() => {
@@ -176,8 +304,8 @@ export default function Home() {
                 onClick={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
                   const x = (e.clientX - rect.left) / rect.width;
-                  if (x < 0.25 && !isFirst) goBack();
-                  else if (!isLast) goNext();
+                  if (x < 0.25) { if (!isFirst) goBack(); }
+                  else { if (!isLast) goNext(); }
                 }}
                 onMouseMove={handleContentMouseMove}
                 onMouseLeave={handleContentMouseLeave}
@@ -189,7 +317,10 @@ export default function Home() {
                     }`}
                   />
                 )}
-                <div className={styles.splitPane}>
+                <div
+                  className={styles.splitPane}
+                  style={splitRatios.left ? { aspectRatio: `${splitRatios.left}` } : undefined}
+                >
                   <div className={styles.bevelInner1}>
                     <div className={styles.bevelInner2}>
                       <div className={styles.content}>
@@ -197,12 +328,16 @@ export default function Home() {
                           src={SPLIT_IMAGE_LEFT}
                           alt="Hand grabbing Kernel Panic cards"
                           className={styles.slideImage}
+                          onLoad={(e) => handleImageLoad('left', e)}
                         />
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className={styles.splitPane}>
+                <div
+                  className={styles.splitPane}
+                  style={splitRatios.right ? { aspectRatio: `${splitRatios.right}` } : undefined}
+                >
                   <div className={styles.bevelInner1}>
                     <div className={styles.bevelInner2}>
                       <div className={styles.content}>
@@ -210,6 +345,7 @@ export default function Home() {
                           src={SPLIT_IMAGE_RIGHT}
                           alt="Hand full of clickers"
                           className={styles.slideImage}
+                          onLoad={(e) => handleImageLoad('right', e)}
                         />
                       </div>
                     </div>
@@ -322,34 +458,44 @@ export default function Home() {
                       />
                     )}
 
-                    {/* Card showcase */}
+                    {/* Card carousel */}
                     {currentSlideId === 'cards' && (
-                      <div className={styles.slideCards}>
-                        <div className={styles.cardStack}>
-                          <div className={styles.card}>
-                            <div className={styles.cardTitleBar}>
-                              <span>Add/Subtract 1</span>
-                            </div>
-                            <div className={styles.cardContent}>
-                              <div className={styles.cardSymbol}>+1<br />-1</div>
-                            </div>
-                            <div className={styles.cardType}>Statement</div>
-                          </div>
-                          <div className={`${styles.card} ${styles.cardCyan}`}>
-                            <div
-                              className={`${styles.cardTitleBar} ${styles.cardTitleCyan}`}
-                            >
-                              <span>Access Cyan</span>
-                            </div>
-                            <div className={styles.cardContentCyan}>
-                              <div className={styles.cardAccessIcon}>
-                                <span className={styles.iconComputer}>&#9000;</span>
-                                <span className={styles.iconWire}>&mdash;&mdash;&mdash;</span>
-                                <span className={styles.iconComputer}>&#9000;</span>
+                      <div className={styles.slideCarousel} ref={carouselRef}>
+                        {CAROUSEL_CARDS.map((card, i) => (
+                          <div key={card.label} className={styles.carouselItem}>
+                            <div className={`${styles.card3d} ${card.square ? styles.card3dSquare : ''}`}>
+                              <div
+                                ref={el => { cardRefs.current[i] = el; }}
+                                className={`${styles.cardInner} ${cardsFlipped ? styles.flipped : ''} ${cardsSettled ? styles.settled : ''} ${hoveredCard === i ? styles.hovering : ''}`}
+                                onMouseMove={(e) => handleCardMouseMove(e, i)}
+                                onMouseLeave={() => handleCardMouseLeave(i)}
+                                onClick={() => handleCardTap(i)}
+                              >
+                                <div className={`${styles.cardFace} ${styles.cardFront}`}>
+                                  <img
+                                    src={card.image}
+                                    alt={card.label}
+                                    className={styles.card3dImage}
+                                  />
+                                  <div className={`${styles.cardShine} ${hoveredCard === i || tappedCard === i ? styles.cardShineVisible : ''}`} />
+                                </div>
+                                <div className={`${styles.cardFace} ${styles.cardBack}`}>
+                                  <img
+                                    src={card.back || CARD_BACK}
+                                    alt="Card back"
+                                    className={styles.card3dImage}
+                                  />
+                                </div>
                               </div>
                             </div>
+                            <span className={`${styles.carouselLabel} ${cardsFlipped ? styles.carouselLabelVisible : ''}`}
+                              style={{ transitionDelay: `${0.1 + i * 0.2 + 0.6}s` }}
+                            >{card.label}</span>
+                            <p className={`${styles.carouselDesc} ${cardsFlipped ? styles.carouselDescVisible : ''}`}
+                              style={{ transitionDelay: `${0.1 + i * 0.2 + 0.7}s` }}
+                            >{card.desc}</p>
                           </div>
-                        </div>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -389,14 +535,21 @@ export default function Home() {
         </div>
       </div>
       {/* Custom oversized cursor */}
-      {cursorVisible && (
-        <img
-          src={
-            currentSlideId === 'hero' ? '/cursors/register_private.svg'
-            : currentSlideId === 'text' ? '/cursors/register_cyan.svg'
-            : currentSlideId === 'split' || currentSlideId === 'splitL' || currentSlideId === 'splitR' ? '/cursors/register_magenta.svg'
-            : '/cursors/register_yellow.svg'
-          }
+      {cursorVisible && (() => {
+        const cursorMap: Record<string, string> = {
+          hero: '/cursors/register_private.svg',
+          text: '/cursors/register_cyan.svg',
+          split: '/cursors/register_magenta.svg',
+          splitL: '/cursors/register_magenta.svg',
+          splitR: '/cursors/register_magenta.svg',
+          cards: '/cursors/register_yellow.svg',
+        };
+        const prevSlideId = currentSlide > 0 ? slides[currentSlide - 1] : null;
+        const cursorSrc = (inBackZone && !isFirst && prevSlideId)
+          ? cursorMap[prevSlideId]
+          : cursorMap[currentSlideId];
+        return <img
+          src={cursorSrc}
           alt=""
           className={styles.customCursor}
           style={{
@@ -405,8 +558,8 @@ export default function Home() {
             width: CURSOR_SIZE,
             height: CURSOR_SIZE,
           }}
-        />
-      )}
+        />;
+      })()}
     </div>
   );
 }

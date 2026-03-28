@@ -817,6 +817,20 @@
   .splitContainer {
     cursor: auto;
     touch-action: pan-y;
+    flex-direction: column;
+    gap: calc(var(--px) * 1);
+  }
+
+  .splitPane {
+    max-width: 100%;
+    height: auto;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .splitPane .slideImage {
+    object-fit: contain;
+    background: var(--color-black);
   }
 
   /* --- Split-slide images: ensure they don't collapse to black --- */

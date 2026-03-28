@@ -521,7 +521,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Idle popup windows */}
+                {/* Idle popup windows — miniature clones of purchase.exe */}
                 {idlePopups.map((popup) => (
                   <a
                     key={popup.id}
@@ -529,13 +529,28 @@ export default function Home() {
                     className={styles.idlePopup}
                     style={{ left: `${popup.x}%`, top: `${popup.y}%` }}
                   >
-                    <div className={styles.idlePopupBevel}>
-                      <div className={styles.buyWindowTitleBar}>
-                        <span className={styles.buyWindowTitleText}>purchase.exe</span>
-                      </div>
-                      <div className={styles.idlePopupBody}>
-                        <span className={styles.idlePopupText}>BUY NOW</span>
-                        <span className={styles.idlePopupPrice}>$35</span>
+                    <div className={styles.buyWindow}>
+                      <div className={styles.buyWindowBevelOuter}>
+                        <div className={styles.buyWindowTitleBar}>
+                          <span className={styles.buyWindowTitleText}>purchase.exe</span>
+                        </div>
+                        <div className={styles.buyWindowContent}>
+                          <div className={styles.buySlideCtaInner}>
+                            <div className={styles.buySlideLogoContainer}>
+                              <div className={styles.buySlideLogoBg} aria-hidden="true" style={{ fontFamily: `${logoFont}, serif` }}>
+                                <span className={styles.buySlideLogoLine}>KERNEL</span>
+                                <span className={styles.buySlideLogoLine}>PANIC</span>
+                              </div>
+                              <div className={styles.buySlideLogoFg}>
+                                <span className={styles.buySlideLogoLine}>KERNEL</span>
+                                <span className={styles.buySlideLogoLine}>PANIC</span>
+                              </div>
+                            </div>
+                            <p className={styles.buySlidePrice}>$35</p>
+                            <span className={styles.buySlideCtaButton}>BUY NOW</span>
+                            <span className={styles.buySlideSubtext}>Opens Square checkout</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </a>

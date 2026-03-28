@@ -51,6 +51,14 @@
   align-items: center;
 }
 
+.titleIcon {
+  height: calc(var(--px) * 8);
+  width: auto;
+  margin-left: calc(var(--px) * 2);
+  margin-right: calc(var(--px) * 3);
+  image-rendering: pixelated;
+}
+
 .titleText {
   color: var(--color-win95-light);
   font-family: var(--font-title);

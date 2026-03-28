@@ -393,7 +393,8 @@ export default function Home() {
           {/* Window body — gray chrome area */}
           <div className={styles.windowBody}>
             {/* Title bar */}
-            <div className={styles.titleBar}>
+            <div className={styles.titleBar} onClick={() => changeSlide(0)} style={{ cursor: 'pointer' }}>
+              <img src="/kp-icon.svg" alt="" className={styles.titleIcon} />
               <span className={styles.titleText}>A:\KERNEL_PANIC</span>
             </div>
 

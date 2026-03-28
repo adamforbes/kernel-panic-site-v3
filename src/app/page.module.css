@@ -43,7 +43,8 @@
 /* --- Title bar --- */
 .titleBar {
   background: linear-gradient(to right, #000080, #1084D0);
-  padding: calc(var(--px) * 1) calc(var(--px) * 2);
+  height: calc(var(--px) * 15);
+  padding: 0 calc(var(--px) * 2);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -52,7 +53,8 @@
 .titleText {
   color: var(--color-win95-light);
   font-family: var(--font-title);
-  font-size: calc(var(--px) * 5);
+  font-size: calc(var(--px) * 10);
+  line-height: calc(var(--px) * 12);
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -65,7 +67,7 @@
   flex: 1;
   display: flex;
   min-height: 0;
-  margin: calc(var(--px) * 6) calc(var(--px) * 5);
+  margin: calc(var(--px) * 6);
   margin-bottom: 0;
   border-width: var(--px);
   border-style: solid;
@@ -102,7 +104,7 @@
   justify-content: space-between;
   gap: 0;
   min-height: 0;
-  margin: calc(var(--px) * 6) calc(var(--px) * 5);
+  margin: calc(var(--px) * 6);
   margin-bottom: 0;
   cursor: none;
   position: relative;
@@ -132,12 +134,40 @@
   z-index: 50;
 }
 
+/* --- Center Data Cable (wire + lock) --- */
+.dataCableContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-width: 0;
+  pointer-events: none;
+}
+
+.wire {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: calc(var(--px) * 4);
+  image-rendering: pixelated;
+}
+
+.lock {
+  position: relative;
+  z-index: 1;
+  height: calc(var(--px) * 6);
+  width: auto;
+  image-rendering: pixelated;
+}
+
 /* --- Button bar --- */
 .buttonBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--px) calc(var(--px) * 5);
+  padding: calc(var(--px) * 3) calc(var(--px) * 6);
   flex-shrink: 0;
 }
 
@@ -148,6 +178,11 @@
 
 /* --- Win95 Button (raised bevel) --- */
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-sizing: border-box;
   background: var(--color-win95-bg);
   border-width: var(--px);
   border-style: solid;
@@ -157,8 +192,9 @@
     inset var(--px) var(--px) 0 var(--color-win95-lighter);
   padding: calc(var(--px) * 2) calc(var(--px) * 8);
   font-family: var(--font-system);
-  font-size: calc(var(--px) * 6);
+  font-size: calc(var(--px) * 7);
   font-weight: 400;
+  line-height: 1;
   color: var(--color-black);
   cursor: pointer;
   white-space: nowrap;
@@ -276,7 +312,7 @@
   font-family: var(--font-display);
   font-style: italic;
   font-weight: 400;
-  font-size: clamp(28px, 4vw, 52px);
+  font-size: calc(var(--px) * 16);
   color: #ffffff;
   line-height: 1.2;
   margin-bottom: 0.5em;
@@ -285,7 +321,7 @@
 .slideBody {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(14px, 1.6vw, 20px);
+  font-size: calc(var(--px) * 8);
   color: #d0d0d0;
   line-height: 1.6;
 }
@@ -295,13 +331,12 @@
   width: 100%;
   height: 100%;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 0 8%;
-  gap: clamp(24px, 4vw, 60px);
-  scroll-snap-type: x mandatory;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 3% 4%;
+  gap: clamp(8px, 1vw, 14px);
   scrollbar-width: none;
   background: #008080;
 }
@@ -310,14 +345,42 @@
   display: none;
 }
 
-.carouselItem {
-  flex: 0 0 auto;
+/* Shared row: 4 equal-width columns */
+.carouselCardsRow,
+.carouselTextRow {
+  display: flex;
+  gap: clamp(16px, 2.5vw, 40px);
+  justify-content: center;
+}
+
+/* Cards row: items sit at the bottom */
+.carouselCardsRow {
+  align-items: flex-end;
+}
+
+/* Text row: items sit at the top */
+.carouselTextRow {
+  align-items: flex-start;
+}
+
+/* Each column has consistent width across both rows */
+.carouselColumn {
+  flex: 0 0 clamp(160px, 16vw, 240px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(12px, 1.5vw, 20px);
+  gap: clamp(6px, 0.8vw, 10px);
+  text-align: center;
+}
+
+/* Mobile carousel item (hidden on desktop, shown on mobile) */
+.carouselItemMobile {
+  display: none;
+  flex: 0 0 clamp(140px, 50vw, 240px);
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(8px, 1vw, 14px);
   scroll-snap-align: center;
-  width: clamp(200px, 22vw, 300px);
 }
 
 /* --- Card flipper (two-sided) --- */
@@ -380,9 +443,6 @@
   overflow: hidden;
 }
 
-.cardFront {
-  /* Front face */
-}
 
 .cardBack {
   transform: rotateY(180deg);
@@ -429,7 +489,7 @@
 
 .carouselLabel {
   font-family: var(--font-system);
-  font-size: clamp(14px, 1.2vw, 18px);
+  font-size: clamp(16px, 1.5vw, 22px);
   font-weight: 700;
   color: var(--color-green);
   text-transform: uppercase;
@@ -445,10 +505,11 @@
 
 .carouselDesc {
   font-family: var(--font-display);
-  font-size: clamp(11px, 1vw, 14px);
-  color: #a0a0a0;
+  font-size: clamp(12px, 1.1vw, 15px);
+  color: #f0f0f0;
   text-align: center;
   line-height: 1.5;
+  letter-spacing: -0.02em;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -496,3 +557,431 @@
   transform: translate(-10%, -5%);
   image-rendering: pixelated;
 }
+
+/* =============================================
+   BUY SLIDE — product image + CTA
+   ============================================= */
+
+/* Two-column container: image left, CTA window right */
+.buySlideContainer {
+  flex: 1;
+  display: flex;
+  gap: 0;
+  min-height: 0;
+  margin: calc(var(--px) * 6);
+  margin-bottom: 0;
+  cursor: none;
+  position: relative;
+}
+
+.buySlideContainer .ditherOverlay {
+  z-index: 50;
+}
+
+/* Left pane: flexible width — image determines width at full height */
+.buySlideImagePane {
+  flex: 0 0 auto;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  max-width: 55%;
+}
+
+.buySlideImagePane .bevelInner1 {
+  margin: 0;
+  flex: 1;
+}
+
+.buySlideImagePane .slideImage {
+  width: auto;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Right pane: centers the Win95 window */
+.buySlideCtaPane {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 4%;
+}
+
+/* Win95 window chrome */
+.buyWindow {
+  width: 100%;
+  max-width: 420px;
+  border-width: var(--px);
+  border-style: solid;
+  border-color: var(--color-win95-light) var(--color-win95-darkest) var(--color-win95-darkest) var(--color-win95-light);
+}
+
+.buyWindowBevelOuter {
+  border-width: var(--px);
+  border-style: solid;
+  border-color: var(--color-win95-lighter) var(--color-win95-dark) var(--color-win95-dark) var(--color-win95-lighter);
+  background: var(--color-win95-bg);
+  padding: var(--px);
+}
+
+.buyWindowTitleBar {
+  background: linear-gradient(to right, #000080, #1084D0);
+  height: calc(var(--px) * 15);
+  padding: 0 calc(var(--px) * 2);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.buyWindowTitleText {
+  color: var(--color-win95-light);
+  font-family: var(--font-title);
+  font-size: calc(var(--px) * 10);
+  line-height: calc(var(--px) * 12);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.buyWindowContent {
+  background: var(--color-black);
+  border-width: var(--px);
+  border-style: solid;
+  border-color: var(--color-win95-dark) var(--color-win95-light) var(--color-win95-light) var(--color-win95-dark);
+  margin: calc(var(--px) * 6);
+  overflow: hidden;
+}
+
+.buySlideCtaInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: calc(var(--px) * 16) calc(var(--px) * 24) calc(var(--px) * 14);
+  text-align: center;
+}
+
+/* --- Logo (matches slide 2 animated Redaction logo) --- */
+.buySlideLogoContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+}
+
+.buySlideLogoFg,
+.buySlideLogoBg {
+  display: flex;
+  flex-direction: column;
+  line-height: 0.85;
+  text-align: center;
+}
+
+.buySlideLogoFg {
+  position: relative;
+  z-index: 1;
+  font-family: 'Redaction 35', 'Redaction', Georgia, serif;
+  font-style: italic;
+  color: var(--color-green);
+}
+
+.buySlideLogoBg {
+  position: absolute;
+  z-index: 0;
+  font-family: 'Redaction 70', 'Redaction', Georgia, serif;
+  font-style: italic;
+  color: var(--color-green);
+  opacity: 0.24;
+  transform: scale(1.15);
+}
+
+.buySlideLogoLine {
+  display: block;
+}
+
+.buySlideLogoFg .buySlideLogoLine:first-child {
+  font-size: clamp(32px, 5vw, 72px);
+}
+
+.buySlideLogoFg .buySlideLogoLine:last-child {
+  font-size: clamp(48px, 8vw, 110px);
+}
+
+.buySlideLogoBg .buySlideLogoLine:first-child {
+  font-size: clamp(32px, 5vw, 72px);
+}
+
+.buySlideLogoBg .buySlideLogoLine:last-child {
+  font-size: clamp(48px, 8vw, 110px);
+}
+
+.buySlidePrice {
+  font-family: var(--font-system);
+  font-size: clamp(16px, 1.6vw, 24px);
+  color: #d0d0d0;
+  margin: 0 0 8px;
+}
+
+.buySlideCtaButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-sizing: border-box;
+  font-family: var(--font-system);
+  font-size: calc(var(--px) * 12);
+  font-weight: 700;
+  line-height: 1;
+  padding: calc(var(--px) * 6) calc(var(--px) * 20);
+  background: var(--color-red, #cc0000);
+  color: white;
+  border-width: var(--px);
+  border-style: solid;
+  border-color: #ff6b6b var(--color-win95-darkest) var(--color-win95-darkest) #ff6b6b;
+  box-shadow:
+    inset calc(var(--px) * -1) calc(var(--px) * -1) 0 rgba(0, 0, 0, 0.25),
+    inset var(--px) var(--px) 0 rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: background 0.1s;
+}
+
+.buySlideCtaButton:hover {
+  background: #b00000;
+}
+
+.buySlideCtaButton:active {
+  border-color: var(--color-win95-darkest) #ff6b6b #ff6b6b var(--color-win95-darkest);
+  box-shadow:
+    inset var(--px) var(--px) 0 rgba(0, 0, 0, 0.25),
+    inset calc(var(--px) * -1) calc(var(--px) * -1) 0 rgba(255, 255, 255, 0.2);
+}
+
+.buySlideSubtext {
+  font-family: var(--font-system);
+  font-size: calc(var(--px) * 4);
+  color: #999;
+  margin-top: 2px;
+}
+
+/* =============================================
+   IDLE POPUP WINDOWS (buy slide easter egg)
+   ============================================= */
+
+.idlePopup {
+  position: absolute;
+  z-index: 100;
+  text-decoration: none;
+  cursor: pointer;
+  animation: idlePopupAppear 0.15s steps(3) forwards;
+  width: clamp(140px, 18vw, 220px);
+}
+
+.idlePopupBevel {
+  border-width: var(--px);
+  border-style: solid;
+  border-color: var(--color-win95-light) var(--color-win95-darkest) var(--color-win95-darkest) var(--color-win95-light);
+}
+
+.idlePopupBevel > :first-child {
+  /* Reuse buyWindowTitleBar but smaller */
+  height: calc(var(--px) * 10);
+}
+
+.idlePopupBevel > :first-child > span {
+  font-size: calc(var(--px) * 6);
+  line-height: calc(var(--px) * 8);
+}
+
+.idlePopupBody {
+  background: var(--color-win95-bg);
+  padding: calc(var(--px) * 4) calc(var(--px) * 3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--px) * 2);
+}
+
+.idlePopupText {
+  font-family: var(--font-system);
+  font-size: calc(var(--px) * 7);
+  font-weight: 700;
+  color: var(--color-black);
+  text-transform: uppercase;
+}
+
+.idlePopupPrice {
+  font-family: var(--font-system);
+  font-size: calc(var(--px) * 6);
+  color: #666;
+}
+
+@keyframes idlePopupAppear {
+  0%   { transform: scale(0); opacity: 0; }
+  50%  { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* =============================================
+   MOBILE RESPONSIVENESS (< 768px)
+   ============================================= */
+@media (max-width: 768px) {
+
+  /* --- Layout: reduce chrome margins to give content more room --- */
+  .bevelInner1 {
+    margin: calc(var(--px) * 1);
+    margin-bottom: 0;
+  }
+
+  .splitContainer {
+    margin: calc(var(--px) * 1);
+    margin-bottom: 0;
+  }
+
+  /* --- Content area: restore default cursor, enable touch scroll --- */
+  .content {
+    cursor: auto;
+    touch-action: pan-y;
+    min-height: 200px;
+  }
+
+  .splitContainer {
+    cursor: auto;
+    touch-action: pan-y;
+  }
+
+  /* --- Split-slide images: ensure they don't collapse to black --- */
+  .slideImage {
+    object-position: center;
+    min-height: 100px;
+  }
+
+
+  /* --- Button bar: wrap, safe-area, condensed --- */
+  .buttonBar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: var(--px) calc(var(--px) * 2);
+    padding-bottom: calc(var(--px) + env(safe-area-inset-bottom, 8px));
+  }
+
+
+  .btn:active:not(:disabled) {
+    padding: calc(var(--px) * 3) calc(var(--px) * 5) calc(var(--px) * 1) calc(var(--px) * 3);
+  }
+
+  /* --- Logo: scale down so it doesn't dominate the screen --- */
+  .logoFg .logoLine:first-child,
+  .logoBg .logoLine:first-child {
+    font-size: clamp(32px, 10vw, 60px);
+  }
+
+  .logoFg .logoLine:last-child,
+  .logoBg .logoLine:last-child {
+    font-size: clamp(48px, 15vw, 90px);
+  }
+
+  .logoContainer {
+    margin-bottom: 0.5em;
+  }
+
+  /* --- Text slides: better padding & readability --- */
+  .slideText {
+    padding: 5% 8%;
+    gap: 1em;
+  }
+
+  .slideHeading {
+    /* No manual override — scales naturally with --px */
+    margin-bottom: 0.3em;
+  }
+
+  .slideBody {
+     /* No manual override — scales naturally with --px */
+    line-height: 1.5;
+  }
+
+  /* --- Carousel: horizontal scroll on mobile --- */
+  .slideCarousel {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 4%;
+    gap: clamp(16px, 3vw, 24px);
+    scrollbar-width: none;
+    scroll-snap-type: x mandatory;
+  }
+
+  .slideCarousel::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide the two-row desktop layout on mobile */
+  .carouselCardsRow,
+  .carouselTextRow {
+    display: none;
+  }
+
+  /* Show the mobile single-item layout */
+  .carouselItemMobile {
+    display: flex;
+  }
+
+  .carouselLabel {
+    font-size: clamp(12px, 3vw, 16px);
+  }
+
+  .carouselDesc {
+    font-size: clamp(11px, 2.5vw, 13px);
+  }
+
+  /* --- Buy slide: stack vertically on mobile --- */
+  .buySlideContainer {
+    flex-direction: column;
+    margin: calc(var(--px) * 2);
+    margin-bottom: 0;
+    cursor: auto;
+  }
+
+  .buySlideImagePane {
+    flex: 1;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .buySlideImagePane .slideImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .buySlideCtaPane {
+    flex: 0 0 auto;
+    padding: 8px;
+  }
+
+  .buyWindow {
+    max-width: 100%;
+  }
+
+  .buySlideCtaInner {
+    gap: 8px;
+    padding: 12px 8px;
+  }
+
+  .idlePopup {
+    width: clamp(100px, 35vw, 160px);
+  }
+
+}
+

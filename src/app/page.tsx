@@ -13,6 +13,8 @@ const CARD_PLACEHOLDER =
   'https://res.cloudinary.com/dkcuvaird/image/upload/v1768415640/statement__2-1_evfouk.png';
 const CARD_BACK =
   'https://res.cloudinary.com/dkcuvaird/image/upload/v1768415599/card-back_lnlye1.png';
+const PRODUCT_IMAGE =
+  'https://res.cloudinary.com/dkcuvaird/image/upload/v1774057309/box-open_kernel-panic_wozhcl.jpg';
 const CARD_BACK_TASK =
   'https://res.cloudinary.com/dkcuvaird/image/upload/v1768417735/card-back_task_f0xo5c.png';
 
@@ -65,19 +67,31 @@ const REDACTION_WEIGHTS = [
 
 // Desktop slides: 0=hero, 1=text, 2=split, 3=cards
 // Mobile slides:  0=hero, 1=text, 2=splitL, 3=splitR, 4=cards
-type SlideId = 'hero' | 'text' | 'split' | 'splitL' | 'splitR' | 'cards';
-const DESKTOP_SLIDES: SlideId[] = ['hero', 'text', 'split', 'cards'];
-const MOBILE_SLIDES: SlideId[] = ['hero', 'text', 'splitL', 'splitR', 'cards'];
+type SlideId = 'hero' | 'text' | 'split' | 'splitL' | 'splitR' | 'cards' | 'buy';
+const DESKTOP_SLIDES: SlideId[] = ['hero', 'text', 'split', 'cards', 'buy'];
+const MOBILE_SLIDES: SlideId[] = ['hero', 'text', 'splitL', 'splitR', 'cards', 'buy'];
+
+function getSlideFromHash(slides: SlideId[]): number {
+  if (typeof window === 'undefined') return 0;
+  const hash = window.location.hash.replace('#', '') as SlideId;
+  const idx = slides.indexOf(hash);
+  return idx >= 0 ? idx : 0;
+}
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [displaySlide, setDisplaySlide] = useState(0);
+  const [initialHashApplied, setInitialHashApplied] = useState(false);
   const [ditherPhase, setDitherPhase] = useState<'idle' | 'out' | 'in'>('idle');
   const [cursorPos, setCursorPos] = useState({ x: -999, y: -999 });
   const [cursorVisible, setCursorVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [logoFont, setLogoFont] = useState(REDACTION_WEIGHTS[0]);
   const [cardsFlipped, setCardsFlipped] = useState(false);
+  const [idlePopups, setIdlePopups] = useState<{ id: number; x: number; y: number }[]>([]);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const spawnTimerRef = useRef<ReturnType<typeof setInterval>>();
+  const popupIdRef = useRef(0);
   const carouselRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -89,6 +103,32 @@ export default function Home() {
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
+
+  // On mount (and after isMobile is resolved), read hash and jump to that slide
+  useEffect(() => {
+    if (initialHashApplied) return;
+    const slidesList = isMobile ? MOBILE_SLIDES : DESKTOP_SLIDES;
+    const idx = getSlideFromHash(slidesList);
+    if (idx > 0) {
+      setCurrentSlide(idx);
+      setDisplaySlide(idx);
+    }
+    setInitialHashApplied(true);
+  }, [isMobile, initialHashApplied]);
+
+  // Listen for browser back/forward (popstate) to sync slide from hash
+  useEffect(() => {
+    const handlePopState = () => {
+      const slidesList = isMobile ? MOBILE_SLIDES : DESKTOP_SLIDES;
+      const idx = getSlideFromHash(slidesList);
+      setCurrentSlide(idx);
+      setDisplaySlide(idx);
+      setDitherPhase('in');
+      setTimeout(() => setDitherPhase('idle'), DITHER_DURATION);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isMobile]);
 
   const slides = isMobile ? MOBILE_SLIDES : DESKTOP_SLIDES;
   const totalSlides = slides.length;
@@ -116,6 +156,59 @@ export default function Home() {
       setTappedCard(null);
     }
   }, [currentSlideId]);
+
+  // Idle popup spawner on buy slide
+  const clearIdleTimers = useCallback(() => {
+    clearTimeout(idleTimerRef.current);
+    clearInterval(spawnTimerRef.current);
+  }, []);
+
+  const resetIdleTimer = useCallback(() => {
+    clearIdleTimers();
+    if (currentSlideId !== 'buy') return;
+    idleTimerRef.current = setTimeout(() => {
+      spawnTimerRef.current = setInterval(() => {
+        setIdlePopups(prev => [
+          ...prev,
+          {
+            id: popupIdRef.current++,
+            x: Math.random() * 80 + 5,  // 5–85% to stay in bounds
+            y: Math.random() * 70 + 5,  // 5–75%
+          },
+        ]);
+      }, 1000);
+    }, 10000);
+  }, [currentSlideId, clearIdleTimers]);
+
+  // Start/reset idle timer when entering buy slide or on interaction
+  useEffect(() => {
+    if (currentSlideId === 'buy') {
+      setIdlePopups([]);
+      popupIdRef.current = 0;
+      resetIdleTimer();
+    } else {
+      clearIdleTimers();
+      setIdlePopups([]);
+    }
+    return clearIdleTimers;
+  }, [currentSlideId, resetIdleTimer, clearIdleTimers]);
+
+  // Reset idle timer on any mouse/touch/key activity while on buy slide
+  useEffect(() => {
+    if (currentSlideId !== 'buy') return;
+    const reset = () => {
+      setIdlePopups([]);
+      resetIdleTimer();
+    };
+    window.addEventListener('mousemove', reset);
+    window.addEventListener('touchstart', reset);
+    window.addEventListener('keydown', reset);
+    return () => {
+      window.removeEventListener('mousemove', reset);
+      window.removeEventListener('touchstart', reset);
+      window.removeEventListener('keydown', reset);
+    };
+  }, [currentSlideId, resetIdleTimer]);
 
   // Per-card mouse tracking — tilt toward cursor + lighting
   const handleCardMouseMove = useCallback((e: React.MouseEvent, index: number) => {
@@ -241,7 +334,13 @@ export default function Home() {
     timerRef.current = setTimeout(() => {
       setDitherPhase('idle');
     }, DITHER_DURATION);
-  }, []);
+    // Update URL hash so the slide persists on refresh / is shareable
+    const slidesList = isMobile ? MOBILE_SLIDES : DESKTOP_SLIDES;
+    const slideId = slidesList[newSlide];
+    if (slideId) {
+      window.history.pushState(null, '', `#${slideId}`);
+    }
+  }, [isMobile]);
 
   const goBack = useCallback(() => {
     if (!isFirst) changeSlide(currentSlide - 1);
@@ -272,16 +371,18 @@ export default function Home() {
   const [inBackZone, setInBackZone] = useState(false);
 
   const handleContentMouseMove = useCallback((e: React.MouseEvent) => {
+    if (isMobile) return;
     setCursorPos({ x: e.clientX, y: e.clientY });
     setCursorVisible(true);
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width;
     setInBackZone(x < 0.25);
-  }, []);
+  }, [isMobile]);
 
   const handleContentMouseLeave = useCallback(() => {
+    if (isMobile) return;
     setCursorVisible(false);
-  }, []);
+  }, [isMobile]);
 
   return (
     <div className={styles.viewport}>
@@ -293,7 +394,7 @@ export default function Home() {
           <div className={styles.windowBody}>
             {/* Title bar */}
             <div className={styles.titleBar}>
-              <span className={styles.titleText}>Kernel Panic : Board Game</span>
+              <span className={styles.titleText}>A:\KERNEL_PANIC</span>
             </div>
 
             {/* Content well */}
@@ -334,6 +435,13 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
+
+                {/* Wire + Lock connector — flex child filling the gap */}
+                <div className={styles.dataCableContainer}>
+                  <img src="/statement/wire.svg" alt="" className={styles.wire} />
+                  <img src="/statement/lock.svg" alt="" className={styles.lock} />
+                </div>
+
                 <div
                   className={styles.splitPane}
                   style={splitRatios.right ? { aspectRatio: `${splitRatios.right}` } : undefined}
@@ -351,6 +459,87 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
+              </div>
+            ) : currentSlideId === 'buy' ? (
+              /* Buy slide — image left, Win95 CTA window right */
+              <div
+                className={styles.buySlideContainer}
+                onMouseMove={handleContentMouseMove}
+                onMouseLeave={handleContentMouseLeave}
+              >
+                {ditherPhase !== 'idle' && (
+                  <div
+                    className={`${styles.ditherOverlay} ${
+                      ditherPhase === 'out' ? styles.ditherOut : styles.ditherIn
+                    }`}
+                  />
+                )}
+                {/* Left: product image — flexible width, fully visible */}
+                <div className={styles.buySlideImagePane}>
+                  <div className={styles.bevelInner1}>
+                    <div className={styles.bevelInner2}>
+                      <div className={styles.content}>
+                        <img
+                          src={PRODUCT_IMAGE}
+                          alt="Kernel Panic board game — open box"
+                          className={styles.slideImage}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* Right: Win95 floating window with CTA */}
+                <div className={styles.buySlideCtaPane}>
+                  <div className={styles.buyWindow}>
+                    <div className={styles.buyWindowBevelOuter}>
+                      <div className={styles.buyWindowTitleBar}>
+                        <span className={styles.buyWindowTitleText}>purchase.exe</span>
+                      </div>
+                      <div className={styles.buyWindowContent}>
+                        <div className={styles.buySlideCtaInner}>
+                          <div className={styles.buySlideLogoContainer}>
+                            <div className={styles.buySlideLogoBg} aria-hidden="true" style={{ fontFamily: `${logoFont}, serif` }}>
+                              <span className={styles.buySlideLogoLine}>KERNEL</span>
+                              <span className={styles.buySlideLogoLine}>PANIC</span>
+                            </div>
+                            <div className={styles.buySlideLogoFg}>
+                              <span className={styles.buySlideLogoLine}>KERNEL</span>
+                              <span className={styles.buySlideLogoLine}>PANIC</span>
+                            </div>
+                          </div>
+                          <p className={styles.buySlidePrice}>$35</p>
+                          <a
+                            href="https://redpupgames.square.site/"
+                            className={styles.buySlideCtaButton}
+                          >
+                            BUY NOW
+                          </a>
+                          <span className={styles.buySlideSubtext}>Opens Square checkout</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Idle popup windows */}
+                {idlePopups.map((popup) => (
+                  <a
+                    key={popup.id}
+                    href="https://redpupgames.square.site/"
+                    className={styles.idlePopup}
+                    style={{ left: `${popup.x}%`, top: `${popup.y}%` }}
+                  >
+                    <div className={styles.idlePopupBevel}>
+                      <div className={styles.buyWindowTitleBar}>
+                        <span className={styles.buyWindowTitleText}>purchase.exe</span>
+                      </div>
+                      <div className={styles.idlePopupBody}>
+                        <span className={styles.idlePopupText}>BUY NOW</span>
+                        <span className={styles.idlePopupPrice}>$35</span>
+                      </div>
+                    </div>
+                  </a>
+                ))}
               </div>
             ) : (
               /* Single content well */
@@ -461,30 +650,64 @@ export default function Home() {
                     {/* Card carousel */}
                     {currentSlideId === 'cards' && (
                       <div className={styles.slideCarousel} ref={carouselRef}>
+                        {/* Top row: cards, bottom-aligned */}
+                        <div className={styles.carouselCardsRow}>
+                          {CAROUSEL_CARDS.map((card, i) => (
+                            <div key={card.label} className={styles.carouselColumn}>
+                              <div className={`${styles.card3d} ${card.square ? styles.card3dSquare : ''}`}>
+                                <div
+                                  ref={el => { cardRefs.current[i] = el; }}
+                                  className={`${styles.cardInner} ${cardsFlipped ? styles.flipped : ''} ${cardsSettled ? styles.settled : ''} ${hoveredCard === i ? styles.hovering : ''}`}
+                                  onMouseMove={(e) => handleCardMouseMove(e, i)}
+                                  onMouseLeave={() => handleCardMouseLeave(i)}
+                                  onClick={() => handleCardTap(i)}
+                                >
+                                  <div className={`${styles.cardFace} ${styles.cardFront}`}>
+                                    <img
+                                      src={card.image}
+                                      alt={card.label}
+                                      className={styles.card3dImage}
+                                    />
+                                    <div className={`${styles.cardShine} ${hoveredCard === i || tappedCard === i ? styles.cardShineVisible : ''}`} />
+                                  </div>
+                                  <div className={`${styles.cardFace} ${styles.cardBack}`}>
+                                    <img
+                                      src={card.back || CARD_BACK}
+                                      alt="Card back"
+                                      className={styles.card3dImage}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {/* Bottom row: labels + descriptions, top-aligned */}
+                        <div className={styles.carouselTextRow}>
+                          {CAROUSEL_CARDS.map((card, i) => (
+                            <div key={card.label} className={styles.carouselColumn}>
+                              <span className={`${styles.carouselLabel} ${cardsFlipped ? styles.carouselLabelVisible : ''}`}
+                                style={{ transitionDelay: `${0.1 + i * 0.2 + 0.6}s` }}
+                              >{card.label}</span>
+                              <p className={`${styles.carouselDesc} ${cardsFlipped ? styles.carouselDescVisible : ''}`}
+                                style={{ transitionDelay: `${0.1 + i * 0.2 + 0.7}s` }}
+                              >{card.desc}</p>
+                            </div>
+                          ))}
+                        </div>
+                        {/* Mobile: individual card+text items (hidden on desktop) */}
                         {CAROUSEL_CARDS.map((card, i) => (
-                          <div key={card.label} className={styles.carouselItem}>
+                          <div key={`m-${card.label}`} className={styles.carouselItemMobile}>
                             <div className={`${styles.card3d} ${card.square ? styles.card3dSquare : ''}`}>
                               <div
-                                ref={el => { cardRefs.current[i] = el; }}
-                                className={`${styles.cardInner} ${cardsFlipped ? styles.flipped : ''} ${cardsSettled ? styles.settled : ''} ${hoveredCard === i ? styles.hovering : ''}`}
-                                onMouseMove={(e) => handleCardMouseMove(e, i)}
-                                onMouseLeave={() => handleCardMouseLeave(i)}
+                                className={`${styles.cardInner} ${cardsFlipped ? styles.flipped : ''} ${cardsSettled ? styles.settled : ''}`}
                                 onClick={() => handleCardTap(i)}
                               >
                                 <div className={`${styles.cardFace} ${styles.cardFront}`}>
-                                  <img
-                                    src={card.image}
-                                    alt={card.label}
-                                    className={styles.card3dImage}
-                                  />
-                                  <div className={`${styles.cardShine} ${hoveredCard === i || tappedCard === i ? styles.cardShineVisible : ''}`} />
+                                  <img src={card.image} alt={card.label} className={styles.card3dImage} />
                                 </div>
                                 <div className={`${styles.cardFace} ${styles.cardBack}`}>
-                                  <img
-                                    src={card.back || CARD_BACK}
-                                    alt="Card back"
-                                    className={styles.card3dImage}
-                                  />
+                                  <img src={card.back || CARD_BACK} alt="Card back" className={styles.card3dImage} />
                                 </div>
                               </div>
                             </div>
@@ -505,9 +728,13 @@ export default function Home() {
 
             {/* Button bar */}
             <div className={styles.buttonBar}>
-              <button className={styles.btn}>
+              <a
+                href="https://redpupgames.square.site/"
+                className={styles.btn}
+                style={currentSlideId === 'buy' ? { visibility: 'hidden' } : undefined}
+              >
                 <u>B</u>UY NOW
-              </button>
+              </a>
               <div className={styles.navButtons}>
                 <button
                   className={styles.btn}
@@ -517,7 +744,7 @@ export default function Home() {
                     goBack();
                   }}
                 >
-                  &lsaquo; <u>B</u>ack
+                  {isMobile ? '←' : <>&lsaquo; <u>B</u>ack</>}
                 </button>
                 <button
                   className={styles.btn}
@@ -527,15 +754,15 @@ export default function Home() {
                     goNext();
                   }}
                 >
-                  <u>N</u>ext &rsaquo;
+                  {isMobile ? '→' : <><u>N</u>ext &rsaquo;</>}
                 </button>
               </div>
             </div>
           </div>
         </div>
       </div>
-      {/* Custom oversized cursor */}
-      {cursorVisible && (() => {
+      {/* Custom oversized cursor (hidden on mobile) */}
+      {!isMobile && cursorVisible && (() => {
         const cursorMap: Record<string, string> = {
           hero: '/cursors/register_private.svg',
           text: '/cursors/register_cyan.svg',
@@ -543,6 +770,7 @@ export default function Home() {
           splitL: '/cursors/register_magenta.svg',
           splitR: '/cursors/register_magenta.svg',
           cards: '/cursors/register_yellow.svg',
+          buy: '/cursors/register_private.svg',
         };
         const prevSlideId = currentSlide > 0 ? slides[currentSlide - 1] : null;
         const cursorSrc = (inBackZone && !isFirst && prevSlideId)

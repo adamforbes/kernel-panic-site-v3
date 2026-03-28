@@ -20,6 +20,9 @@
 }
 
 .buyButton {
+  display: inline-block;
+  text-decoration: none;
+  box-sizing: border-box;
   font-family: var(--font-system);
   font-size: 16px;
   font-weight: 700;

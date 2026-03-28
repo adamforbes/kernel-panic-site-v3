@@ -88,7 +88,16 @@
 /* === DESIGN TOKENS === */
 :root {
   /* Master pixel unit — controls all window chrome sizing */
-  --px: 3px;
+  --px: 2.5px;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --px: 1.5px;
+  }
+}
+
+:root {
 
   --color-black: #000000;
   --color-green: #00ff41;

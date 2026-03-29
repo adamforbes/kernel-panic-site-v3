@@ -360,6 +360,29 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [goBack, goNext]);
 
+  // Swipe navigation for mobile
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartRef.current.x;
+    const dy = touch.clientY - touchStartRef.current.y;
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+    // Only trigger if horizontal swipe > 50px and more horizontal than vertical
+    if (absDx > 50 && absDx > absDy * 1.5) {
+      if (dx < 0) goNext();
+      else goBack();
+    }
+    touchStartRef.current = null;
+  }, [goBack, goNext]);
+
   const [splitRatios, setSplitRatios] = useState<{ left: number; right: number }>({ left: 0, right: 0 });
 
   const handleImageLoad = useCallback((side: 'left' | 'right', e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -385,7 +408,7 @@ export default function Home() {
   }, [isMobile]);
 
   return (
-    <div className={styles.viewport}>
+    <div className={styles.viewport} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       {/* Outer bevel layer 1: white top-left, black bottom-right */}
       <div className={styles.bevelOuter1}>
         {/* Outer bevel layer 2: lighter gray top-left, dark gray bottom-right */}

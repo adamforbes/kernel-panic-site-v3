@@ -8,11 +8,21 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "C:\\GAMES\\KERNEL\\PANIC.EXE",
-
-
+  title: "Kernel Panic — A Real-Time Board Game",
   description:
-    "The system is compromised. Only you can restore order. A strategic card game from Red Pup Games.",
+    "Chaotically concurrent computation. You are a team of digital processes, racing to complete as many tasks as you can in 10 minutes. A real-time puzzle with no turns — everyone plays continuously as the clock ticks down. Compute and collaborate to set a new high score every game!",
+  openGraph: {
+    title: "Kernel Panic — A Real-Time Board Game",
+    description:
+      "A real-time puzzle board game of chaotically concurrent computation. No turns — everyone plays continuously. Race to complete tasks in 10 minutes!",
+    siteName: "Kernel Panic Game",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Kernel Panic — A Real-Time Board Game",
+    description:
+      "A real-time puzzle board game of chaotically concurrent computation. No turns — everyone plays continuously. Race to complete tasks in 10 minutes!",
+  },
 };
 
 export default function RootLayout({

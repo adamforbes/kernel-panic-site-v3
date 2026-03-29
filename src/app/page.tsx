@@ -10,7 +10,7 @@ const SPLIT_IMAGE_LEFT =
 const SPLIT_IMAGE_RIGHT =
   'https://res.cloudinary.com/dkcuvaird/image/upload/v1774057296/hand-full-of-clickers_kernel-panic_rc4fd9.jpg';
 const CARD_PLACEHOLDER =
-  'https://res.cloudinary.com/dkcuvaird/image/upload/v1768415640/statement__2-1_evfouk.png';
+  'https://res.cloudinary.com/dkcuvaird/image/upload/v1768415583/statement__2_fhpvuq.png';
 const CARD_BACK =
   'https://res.cloudinary.com/dkcuvaird/image/upload/v1768415599/card-back_lnlye1.png';
 const PRODUCT_IMAGE =
@@ -21,26 +21,26 @@ const CARD_BACK_TASK =
 const CAROUSEL_CARDS = [
   {
     label: 'Tasks',
-    desc: 'Tasks represent the user\'s requirements. Each player has their own pair of tasks and works on them in parallel!',
+    desc: 'Complete tasks to earn chips for your team. Finish yours solo or help others with theirs, all in parallel.',
     image: 'https://res.cloudinary.com/dkcuvaird/image/upload/v1768417762/task-16_pmqvfh.png',
     back: CARD_BACK_TASK,
     square: true,
   },
   {
     label: 'Actions',
-    desc: 'Actions are operation cards that players use to edit storage counters. Everyone plays actions simultaneously in real time, as fast as they can!',
+    desc: 'Actions edit your storage counters. Play fast, as many as you can, to finish your tasks.',
     image: CARD_PLACEHOLDER,
     square: false,
   },
   {
     label: 'Bugs',
-    desc: 'Bugs are tricky actions with unexpected effects. Bugs apply to one of your private storage counters, just like statements.',
+    desc: 'Brace yourself for the unexpected. Bugs add chaos to your counters. Or are they features?',
     image: 'https://res.cloudinary.com/dkcuvaird/image/upload/v1768415593/bug-3_afurnf.png',
     square: false,
   },
   {
     label: 'Outages',
-    desc: 'Outages are even more dangerous than bugs. When you draw an outage, announce it to everyone and play it immediately! (It does not go into your hand.)',
+    desc: 'Emergency! Play this immediately. Hopefully your team is prepared.',
     image: 'https://res.cloudinary.com/dkcuvaird/image/upload/v1768415616/outage-2_ewi3nj.png',
     square: false,
   },
@@ -89,6 +89,8 @@ export default function Home() {
   const [logoFont, setLogoFont] = useState(REDACTION_WEIGHTS[0]);
   const [cardsFlipped, setCardsFlipped] = useState(false);
   const [idlePopups, setIdlePopups] = useState<{ id: number; x: number; y: number }[]>([]);
+  const [activeCarouselCard, setActiveCarouselCard] = useState(0);
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
   const idleTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const spawnTimerRef = useRef<ReturnType<typeof setInterval>>();
   const popupIdRef = useRef(0);
@@ -96,6 +98,42 @@ export default function Home() {
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const contentRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Track image loading for shimmer states
+  const handleImageLoaded = useCallback((src: string) => {
+    setLoadedImages(prev => {
+      if (prev.has(src)) return prev;
+      return new Set(prev).add(src);
+    });
+  }, []);
+
+  // Ref callback that fires synchronously on mount — catches images that are
+  // already cached/complete before React can attach the onLoad handler.
+  const handleImageRef = useCallback((el: HTMLImageElement | null, src: string) => {
+    if (el && el.complete && el.naturalWidth > 0) {
+      handleImageLoaded(src);
+    }
+  }, [handleImageLoaded]);
+
+  // Track active carousel card via IntersectionObserver (set up after render)
+  useEffect(() => {
+    if (!isMobile || !carouselRef.current) return;
+    const items = carouselRef.current.querySelectorAll('[data-carousel-item]');
+    if (!items.length) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const idx = Number((entry.target as HTMLElement).dataset.carouselItem);
+            if (!isNaN(idx)) setActiveCarouselCard(idx);
+          }
+        });
+      },
+      { root: carouselRef.current, threshold: 0.6 }
+    );
+    items.forEach(item => observer.observe(item));
+    return () => observer.disconnect();
+  }, [isMobile, displaySlide]);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
@@ -165,7 +203,7 @@ export default function Home() {
 
   const resetIdleTimer = useCallback(() => {
     clearIdleTimers();
-    if (currentSlideId !== 'buy') return;
+    if (currentSlideId !== 'buy' || isMobile) return;
     idleTimerRef.current = setTimeout(() => {
       spawnTimerRef.current = setInterval(() => {
         setIdlePopups(prev => [
@@ -178,7 +216,7 @@ export default function Home() {
         ]);
       }, 1000);
     }, 10000);
-  }, [currentSlideId, clearIdleTimers]);
+  }, [currentSlideId, isMobile, clearIdleTimers]);
 
   // Start/reset idle timer when entering buy slide or on interaction
   useEffect(() => {
@@ -274,6 +312,7 @@ export default function Home() {
   const decayRef = useRef<ReturnType<typeof requestAnimationFrame>>();
 
   useEffect(() => {
+    if (isMobile) return; // Skip mouse tracking on mobile
     const handleMouseMove = (e: MouseEvent) => {
       const dx = e.clientX - lastMousePos.current.x;
       const dy = e.clientY - lastMousePos.current.y;
@@ -285,10 +324,11 @@ export default function Home() {
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [isMobile]);
 
   // Animation loop: decay velocity, pick font weight based on current velocity
   useEffect(() => {
+    if (isMobile) return; // Skip RAF loop on mobile
     const bgWeights = [
       "'Redaction 70'", "'Redaction 100'", "'Redaction 50'",
       "'Redaction 35'", "'Redaction 20'", "'Redaction 10'", "'Redaction'",
@@ -322,7 +362,7 @@ export default function Home() {
     return () => {
       if (decayRef.current) cancelAnimationFrame(decayRef.current);
     };
-  }, []);
+  }, [isMobile]);
 
   const changeSlide = useCallback((newSlide: number) => {
     // Clear any pending timer from a previous transition
@@ -350,15 +390,16 @@ export default function Home() {
     if (!isLast) changeSlide(currentSlide + 1);
   }, [isLast, currentSlide, changeSlide]);
 
-  // Keyboard navigation
+  // Keyboard navigation (desktop only)
   useEffect(() => {
+    if (isMobile) return;
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') goBack();
       if (e.key === 'ArrowRight') goNext();
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [goBack, goNext]);
+  }, [goBack, goNext, isMobile]);
 
   // Swipe navigation for mobile
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -449,15 +490,18 @@ export default function Home() {
                   <div className={styles.bevelInner1}>
                     <div className={styles.bevelInner2}>
                       <div className={styles.content}>
+                        {!loadedImages.has(SPLIT_IMAGE_LEFT) && <div className={styles.imageLoading} />}
                         <img
+                          ref={(el) => handleImageRef(el, SPLIT_IMAGE_LEFT)}
                           src={SPLIT_IMAGE_LEFT}
                           alt="Hand grabbing Kernel Panic cards"
                           className={styles.slideImage}
-                          onLoad={(e) => handleImageLoad('left', e)}
+                          onLoad={(e) => { handleImageLoad('left', e); handleImageLoaded(SPLIT_IMAGE_LEFT); }}
                         />
                       </div>
                     </div>
                   </div>
+                  <div className={styles.imageCaption}>Play action cards as fast as you can</div>
                 </div>
 
                 {/* Wire + Lock connector — flex child filling the gap */}
@@ -473,15 +517,18 @@ export default function Home() {
                   <div className={styles.bevelInner1}>
                     <div className={styles.bevelInner2}>
                       <div className={styles.content}>
+                        {!loadedImages.has(SPLIT_IMAGE_RIGHT) && <div className={styles.imageLoading} />}
                         <img
+                          ref={(el) => handleImageRef(el, SPLIT_IMAGE_RIGHT)}
                           src={SPLIT_IMAGE_RIGHT}
                           alt="Hand full of clickers"
                           className={styles.slideImage}
-                          onLoad={(e) => handleImageLoad('right', e)}
+                          onLoad={(e) => { handleImageLoad('right', e); handleImageLoaded(SPLIT_IMAGE_RIGHT); }}
                         />
                       </div>
                     </div>
                   </div>
+                  <div className={styles.imageCaption}>Track scores with clicker tokens</div>
                 </div>
               </div>
             ) : currentSlideId === 'buy' ? (
@@ -503,10 +550,13 @@ export default function Home() {
                   <div className={styles.bevelInner1}>
                     <div className={styles.bevelInner2}>
                       <div className={styles.content}>
+                        {!loadedImages.has(PRODUCT_IMAGE) && <div className={styles.imageLoading} />}
                         <img
+                          ref={(el) => handleImageRef(el, PRODUCT_IMAGE)}
                           src={PRODUCT_IMAGE}
                           alt="Kernel Panic board game — open box"
                           className={styles.slideImage}
+                          onLoad={() => handleImageLoaded(PRODUCT_IMAGE)}
                         />
                       </div>
                     </div>
@@ -514,7 +564,7 @@ export default function Home() {
                 </div>
                 {/* Right: Win95 floating window with CTA */}
                 <div className={styles.buySlideCtaPane}>
-                  <div className={styles.buyWindow}>
+                  <div className={`${styles.buyWindow} ${styles.desktopOnly}`}>
                     <div className={styles.buyWindowBevelOuter}>
                       <div className={styles.buyWindowTitleBar}>
                         <span className={styles.buyWindowTitleText}>purchase.exe</span>
@@ -542,6 +592,16 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
+                  </div>
+
+                  <div className={`${styles.mobileBuyCta} ${styles.mobileOnly}`}>
+                    <p className={styles.mobileBuyPrice}>$35</p>
+                    <a
+                      href="https://redpupgames.square.site/"
+                      className={styles.buySlideCtaButton}
+                    >
+                      BUY NOW
+                    </a>
                   </div>
                 </div>
 
@@ -582,7 +642,7 @@ export default function Home() {
               </div>
             ) : (
               /* Single content well */
-              <div className={styles.bevelInner1}>
+              <div className={`${styles.bevelInner1}${(currentSlideId === 'splitL' || currentSlideId === 'splitR') ? ` ${styles.mobileImageSlide}` : ''}`}>
                 <div className={styles.bevelInner2}>
                   <div
                     ref={contentRef}
@@ -607,11 +667,16 @@ export default function Home() {
 
                     {/* Hero image */}
                     {currentSlideId === 'hero' && (
-                      <img
-                        src={HERO_IMAGE}
-                        alt="Kernel Panic board game"
-                        className={styles.slideImage}
-                      />
+                      <>
+                        {!loadedImages.has(HERO_IMAGE) && <div className={styles.imageLoading} />}
+                        <img
+                          ref={(el) => handleImageRef(el, HERO_IMAGE)}
+                          src={HERO_IMAGE}
+                          alt="Kernel Panic board game"
+                          className={styles.slideImage}
+                          onLoad={() => handleImageLoaded(HERO_IMAGE)}
+                        />
+                      </>
                     )}
 
                     {/* Game description */}
@@ -670,20 +735,30 @@ export default function Home() {
                       </div>
                     )}
 
-                    {/* Mobile: individual split images */}
+                    {/* Mobile: individual split images with captions */}
                     {currentSlideId === 'splitL' && (
-                      <img
-                        src={SPLIT_IMAGE_LEFT}
-                        alt="Hand grabbing Kernel Panic cards"
-                        className={styles.slideImage}
-                      />
+                      <>
+                        {!loadedImages.has(SPLIT_IMAGE_LEFT) && <div className={styles.imageLoading} />}
+                        <img
+                          ref={(el) => handleImageRef(el, SPLIT_IMAGE_LEFT)}
+                          src={SPLIT_IMAGE_LEFT}
+                          alt="Hand grabbing Kernel Panic cards"
+                          className={styles.slideImage}
+                          onLoad={() => handleImageLoaded(SPLIT_IMAGE_LEFT)}
+                        />
+                      </>
                     )}
                     {currentSlideId === 'splitR' && (
-                      <img
-                        src={SPLIT_IMAGE_RIGHT}
-                        alt="Hand full of clickers"
-                        className={styles.slideImage}
-                      />
+                      <>
+                        {!loadedImages.has(SPLIT_IMAGE_RIGHT) && <div className={styles.imageLoading} />}
+                        <img
+                          ref={(el) => handleImageRef(el, SPLIT_IMAGE_RIGHT)}
+                          src={SPLIT_IMAGE_RIGHT}
+                          alt="Hand full of clickers"
+                          className={styles.slideImage}
+                          onLoad={() => handleImageLoaded(SPLIT_IMAGE_RIGHT)}
+                        />
+                      </>
                     )}
 
                     {/* Card carousel */}
@@ -736,7 +811,7 @@ export default function Home() {
                         </div>
                         {/* Mobile: individual card+text items (hidden on desktop) */}
                         {CAROUSEL_CARDS.map((card, i) => (
-                          <div key={`m-${card.label}`} className={styles.carouselItemMobile}>
+                          <div key={`m-${card.label}`} className={styles.carouselItemMobile} data-carousel-item={i}>
                             <div className={`${styles.card3d} ${card.square ? styles.card3dSquare : ''}`}>
                               <div
                                 className={`${styles.cardInner} ${cardsFlipped ? styles.flipped : ''} ${cardsSettled ? styles.settled : ''}`}
@@ -758,11 +833,28 @@ export default function Home() {
                             >{card.desc}</p>
                           </div>
                         ))}
+                        {/* Pagination dots (mobile only, rendered via CSS) */}
+                        <div className={styles.carouselDots}>
+                          {CAROUSEL_CARDS.map((_, i) => (
+                            <span
+                              key={i}
+                              className={`${styles.carouselDot} ${activeCarouselCard === i ? styles.carouselDotActive : ''}`}
+                            />
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* Mobile image captions — flex children of windowBody, outside bevel */}
+            {currentSlideId === 'splitL' && (
+              <div className={styles.imageCaption}>Play action cards as fast as you can</div>
+            )}
+            {currentSlideId === 'splitR' && (
+              <div className={styles.imageCaption}>Track scores with clicker tokens</div>
             )}
 
             {/* Button bar */}

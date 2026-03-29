@@ -5,7 +5,7 @@
 
 /* --- Viewport fill --- */
 .viewport {
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
@@ -16,6 +16,7 @@
 /* Layer 1: white top/left, black bottom/right */
 .bevelOuter1 {
   flex: 1;
+  min-width: 0;
   display: flex;
   border-width: var(--px);
   border-style: solid;
@@ -25,6 +26,7 @@
 /* Layer 2: lighter gray top/left, dark gray bottom/right */
 .bevelOuter2 {
   flex: 1;
+  min-width: 0;
   display: flex;
   border-width: var(--px);
   border-style: solid;
@@ -34,6 +36,7 @@
 /* --- Window body (gray chrome) --- */
 .windowBody {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   background: var(--color-win95-bg);
@@ -308,7 +311,7 @@
   max-width: 900px;
   margin: 0 auto;
   height: 100%;
-  padding: 6% 0;
+  padding: 6% 8%;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -503,7 +506,6 @@
   color: var(--color-green);
   text-transform: uppercase;
   text-align: center;
-  text-shadow: 0 0 12px rgba(0, 255, 65, 0.5);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -514,10 +516,10 @@
 
 .carouselDesc {
   font-family: var(--font-display);
-  font-size: clamp(12px, 1.1vw, 15px);
+  font-size: clamp(14px, 1.3vw, 18px);
   color: #f0f0f0;
   text-align: center;
-  line-height: 1.5;
+  line-height: 1.6;
   letter-spacing: -0.02em;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -525,6 +527,63 @@
 
 .carouselDescVisible {
   opacity: 1;
+}
+
+/* --- Carousel pagination dots (mobile) --- */
+.carouselDots {
+  display: none;
+}
+
+/* --- Image caption type bar (MTG-style, below image) --- */
+.splitPane {
+  flex-direction: column;
+}
+
+.imageCaption {
+  flex-shrink: 0;
+  font-family: var(--font-system);
+  font-size: calc(var(--px) * 5);
+  color: var(--color-win95-darkest);
+  padding: calc(var(--px) * 2) calc(var(--px) * 4);
+  background: var(--color-win95-bg);
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Image loading: Win95 dither checkerboard pulse --- */
+/* Base is pure #000 to match the content area exactly — no color bleed */
+.imageLoading {
+  position: absolute;
+  inset: 0;
+  background-color: #000000;
+  z-index: 1;
+  image-rendering: pixelated;
+}
+
+/* Checkerboard overlay pulses in stepped increments, matching the slide transition */
+.imageLoading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-conic-gradient(
+    rgba(255, 255, 255, 0.18) 0% 25%,
+    transparent 0% 50%
+  );
+  background-size: 8px 8px;
+  image-rendering: pixelated;
+  animation: ditherLoadPulse 700ms steps(3) infinite;
+}
+
+@keyframes ditherLoadPulse {
+  0%   { opacity: 0; }
+  50%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.imageLoaded {
+  display: none;
 }
 
 /* --- Dither transition overlay --- */
@@ -801,6 +860,15 @@
 /* =============================================
    MOBILE RESPONSIVENESS (< 768px)
    ============================================= */
+
+.desktopOnly {
+  display: block;
+}
+
+.mobileOnly {
+  display: none;
+}
+
 @media (max-width: 768px) {
 
   /* --- Layout: reduce chrome margins to give content more room --- */
@@ -819,6 +887,52 @@
     cursor: auto;
     touch-action: pan-x pan-y;
     min-height: 200px;
+  }
+
+  /* --- Mobile image slides (splitL / splitR): shrink to natural image height --- */
+  .mobileImageSlide {
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .mobileImageSlide .bevelInner2 {
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .mobileImageSlide .content {
+    min-height: 0;
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .mobileImageSlide .slideImage {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+    display: block !important;
+  }
+
+  /* --- Window Body: Make it scrollable instead of strictly locked --- */
+  .windowBody {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* --- Title bar: keep it at the top --- */
+  .titleBar {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+  }
+
+  /* --- Image caption at windowBody level (mobile image slides) --- */
+  .windowBody > .imageCaption {
+    flex-shrink: 0;
+    margin: 0 calc(var(--px) * 1);
   }
 
 
@@ -841,17 +955,22 @@
     background: var(--color-black);
   }
 
-  /* --- Split-slide images: ensure they don't collapse to black --- */
+  /* --- Split-slide images: center when using object-fit --- */
   .slideImage {
     object-position: center;
-    min-height: 100px;
   }
 
 
-  /* --- Button bar: keep desktop layout, add safe-area --- */
+  /* --- Button bar: sticky bottom so it never gets pushed off-screen --- */
   .buttonBar {
-    padding: calc(var(--px) * 3) calc(var(--px) * 6);
-    padding-bottom: calc(var(--px) * 3 + env(safe-area-inset-bottom, 0px));
+    position: sticky;
+    bottom: 0;
+    margin-top: auto;
+    z-index: 60;
+    background: var(--color-win95-bg);
+    padding: calc(var(--px) * 2) calc(var(--px) * 4);
+    padding-bottom: calc(var(--px) * 2 + env(safe-area-inset-bottom, 0px));
+    flex-shrink: 0;
   }
 
 
@@ -893,11 +1012,12 @@
     flex-direction: row;
     flex-wrap: nowrap;
     justify-content: flex-start;
-    align-items: center;
+    align-items: stretch;
     overflow-x: auto;
     overflow-y: hidden;
-    padding: 4% 6%;
-    gap: 16px;
+    /* Padding left/right = 15% so first/last card centers in view */
+    padding: 3% 15%;
+    gap: 20px;
     scrollbar-width: none;
     scroll-snap-type: x mandatory;
     height: 100%;
@@ -920,24 +1040,26 @@
     flex: 0 0 70%;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    gap: 10px;
     scroll-snap-align: center;
     min-width: 0;
   }
 
   .carouselItemMobile .card3d {
     width: 100%;
-    max-width: 200px;
+    max-width: 240px;
     flex-shrink: 1;
     min-height: 0;
   }
 
   .carouselLabel {
-    font-size: clamp(12px, 3.5vw, 16px);
+    font-size: clamp(14px, 4vw, 18px);
   }
 
   .carouselDesc {
-    font-size: clamp(11px, 2.8vw, 14px);
+    font-size: clamp(14px, 3.5vw, 17px);
+    padding: 0 8px;
   }
 
   /* --- Buy slide: stack vertically on mobile --- */
@@ -957,7 +1079,7 @@
   .buySlideImagePane .slideImage {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
   }
 
   .buySlideCtaPane {
@@ -965,31 +1087,63 @@
     padding: 0;
   }
 
-  .buyWindow {
-    max-width: 100%;
+  .desktopOnly {
+    display: none !important;
   }
 
-  /* Hide logo, price, subtext — just show the button */
-  .buySlideLogoContainer,
-  .buySlidePrice,
-  .buySlideSubtext {
-    display: none;
+  .mobileOnly {
+    display: flex !important;
   }
 
-  /* Grey body, no sunken bevel */
-  .buyWindowContent {
-    background: var(--color-win95-bg);
-    border: none;
+  .mobileBuyCta {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--px) * 6);
+    width: 100%;
+    padding: calc(var(--px) * 8);
+  }
+
+  .mobileBuyPrice {
+    font-family: var(--font-system);
+    font-size: clamp(36px, 10vw, 48px);
+    font-weight: 700;
+    color: #000;
     margin: 0;
-  }
-
-  .buySlideCtaInner {
-    gap: 0;
-    padding: calc(var(--px) * 4);
   }
 
   .idlePopup {
     transform: scale(0.4);
+  }
+
+  /* --- Carousel dots: visible on mobile --- */
+  .carouselDots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 0 4px;
+    flex-shrink: 0;
+    position: absolute;
+    bottom: 8px;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .carouselDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  .carouselDotActive {
+    background: var(--color-green);
+    border-color: var(--color-green);
+    transform: scale(1.3);
   }
 
 }

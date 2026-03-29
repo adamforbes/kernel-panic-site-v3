@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kernel Panic — Mobile Usability Review</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #1a1a1a; line-height: 1.6; }
+  .container { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+  h1 { font-size: 28px; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 14px; margin-bottom: 48px; }
+  .slide-review { margin-bottom: 64px; border-bottom: 1px solid #ddd; padding-bottom: 48px; }
+  .slide-review:last-child { border-bottom: none; }
+  h2 { font-size: 22px; margin-bottom: 4px; color: #111; }
+  .slide-id { font-family: monospace; color: #888; font-size: 13px; margin-bottom: 20px; }
+  .screenshot-container { background: #222; border-radius: 12px; padding: 16px; margin-bottom: 24px; display: flex; justify-content: center; }
+  .screenshot-container img { max-height: 600px; width: auto; border-radius: 4px; border: 2px solid #444; }
+  .findings { background: #fff; border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .finding { margin-bottom: 20px; }
+  .finding:last-child { margin-bottom: 0; }
+  .severity { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 4px; margin-bottom: 6px; }
+  .severity.high { background: #fee; color: #c00; }
+  .severity.medium { background: #fff3e0; color: #e65100; }
+  .severity.low { background: #e8f5e9; color: #2e7d32; }
+  .severity.positive { background: #e3f2fd; color: #1565c0; }
+  .finding h3 { font-size: 15px; margin-bottom: 4px; }
+  .finding p { font-size: 14px; color: #444; }
+  .finding code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: 13px; }
+  .summary-box { background: #1a1a2e; color: #e0e0e0; border-radius: 8px; padding: 28px; margin-top: 48px; }
+  .summary-box h2 { color: #00ff41; margin-bottom: 16px; }
+  .summary-box p { font-size: 14px; line-height: 1.7; }
+  .priority-list { margin-top: 16px; }
+  .priority-list li { margin-bottom: 8px; font-size: 14px; }
+  .priority-list li strong { color: #fff; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Kernel Panic — Mobile Usability Review</h1>
+<p class="subtitle">390×844 viewport (iPhone 14) · March 28, 2026 · Code + visual audit</p>
+
+<!-- ==================== HERO ==================== -->
+<div class="slide-review">
+  <h2>1. Hero Slide</h2>
+  <p class="slide-id">#hero — First impression</p>
+  <div class="screenshot-container">
+    <img src="https://www.kernelpanicgame.net/" alt="Hero slide — see findings below" style="display:none;">
+    <!-- Screenshot reference: ss_02362ked3 — Hero on mobile -->
+  </div>
+  <div class="findings">
+    <div class="finding">
+      <span class="severity high">High</span>
+      <h3>Navigation buttons completely hidden</h3>
+      <p>The <code>.buttonBar</code> with "BUY NOW", "Back", and "Next" buttons is cut off below the viewport fold on every slide. The button bar competes for space with the full-bleed hero image. On a 390×844 phone, the Win95 window chrome (title bar + bevels) eats ~70px, and the button bar needs ~45px, but the content area fills 100dvh with no guarantee the buttons remain visible. Users have no visible way to navigate forward.</p>
+    </div>
+    <div class="finding">
+      <span class="severity medium">Medium</span>
+      <h3>No swipe gesture navigation</h3>
+      <p>Mobile users instinctively swipe to navigate slides. The current implementation only supports button taps (which are hidden) and click-to-advance (tapping the right 75% of the content area). There's no <code>touchstart</code>/<code>touchend</code> swipe handler. For a slide-based experience, swipe is expected and its absence makes the site feel broken.</p>
+    </div>
+    <div class="finding">
+      <span class="severity medium">Medium</span>
+      <h3>No visual affordance for tap-to-navigate</h3>
+      <p>The hidden click zones (left 25% = back, right 75% = forward) have zero visual indication. Desktop users get a custom cursor that changes color to hint at navigation, but mobile hides the cursor entirely. A first-time visitor has no way to discover they can tap to advance.</p>
+    </div>
+    <div class="finding">
+      <span class="severity positive">Positive</span>
+      <h3>Image fills the viewport beautifully</h3>
+      <p>The hero image with <code>object-fit: cover</code> makes strong use of the full screen real estate. The card spread photograph is compelling at mobile scale.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TEXT ==================== -->
+<div class="slide-review">
+  <h2>2. Text Slide</h2>
+  <p class="slide-id">#text — Game description + logo</p>
+  <div class="screenshot-container">
+    <!-- Screenshot reference: ss_107410wav — Text on mobile -->
+  </div>
+  <div class="findings">
+    <div class="finding">
+      <span class="severity high">High</span>
+      <h3>Wall of text with no visual breaks</h3>
+      <p>Three dense paragraphs of body copy render as an unbroken block. On a 390px screen at <code>clamp(13px, 3.5vw, 16px)</code>, this creates a long scroll with no breathing room. Mobile users scan, not read — this slide needs chunking, pull-quotes, or progressive disclosure to hold attention.</p>
+    </div>
+    <div class="finding">
+      <span class="severity medium">Medium</span>
+      <h3>Logo dominates above-the-fold space</h3>
+      <p>The KERNEL PANIC logo takes up roughly the top third of the viewport before any description text appears. Consider reducing the mobile logo size further (currently <code>clamp(32px, 10vw, 60px)</code> / <code>clamp(48px, 15vw, 90px)</code>) or hiding it on this slide since users already saw it in the title bar.</p>
+    </div>
+    <div class="finding">
+      <span class="severity low">Low</span>
+      <h3>Scrollbar hidden but scroll is available</h3>
+      <p>The text is vertically scrollable (<code>overflow-y: scroll</code> with <code>scrollbar-width: none</code>), but there's no visual hint that more content exists below the fold. A fade gradient at the bottom or scroll indicator would help discoverability.</p>
+    </div>
+    <div class="finding">
+      <span class="severity positive">Positive</span>
+      <h3>Typography and contrast are solid</h3>
+      <p>The Redaction display font renders clearly on mobile. White heading on black with gray body text provides good hierarchy. Line-height at 1.5 is comfortable for mobile reading.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SPLIT L ==================== -->
+<div class="slide-review">
+  <h2>3. Split Left Slide</h2>
+  <p class="slide-id">#splitL — Hand grabbing card</p>
+  <div class="screenshot-container">
+    <!-- Screenshot reference: ss_80415jn6v — SplitL on mobile -->
+  </div>
+  <div class="findings">
+    <div class="finding">
+      <span class="severity positive">Positive</span>
+      <h3>Smart decision to split the two images</h3>
+      <p>Breaking the desktop's side-by-side split into two separate mobile slides is the right call. Each image gets the full viewport width, making the product photography much more impactful than a cramped 50/50 split would be.</p>
+    </div>
+    <div class="finding">
+      <span class="severity low">Low</span>
+      <h3>Image letterboxing</h3>
+      <p>The image uses <code>object-fit: cover</code> which fills the frame well, but the aspect ratio difference between the source photo and the mobile viewport means some cropping occurs at top/bottom. The card in the hand is still clearly visible, so this is acceptable.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SPLIT R ==================== -->
+<div class="slide-review">
+  <h2>4. Split Right Slide</h2>
+  <p class="slide-id">#splitR — Hand with clickers</p>
+  <div class="screenshot-container">
+    <!-- Screenshot reference: ss_96718kva5 — SplitR on mobile -->
+  </div>
+  <div class="findings">
+    <div class="finding">
+      <span class="severity positive">Positive</span>
+      <h3>Strong visual continuity</h3>
+      <p>The matching blue sky/green grass background creates a cohesive feel across both split slides. The colorful clickers are eye-catching at mobile scale.</p>
+    </div>
+    <div class="finding">
+      <span class="severity low">Low</span>
+      <h3>Two image-only slides in a row feel thin</h3>
+      <p>Without any text or context, these two slides feel like filler. Consider adding a brief caption overlay (e.g., "Play action cards in real time" / "Track scores with clicker tokens") to give each image purpose.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== CARDS ==================== -->
+<div class="slide-review">
+  <h2>5. Cards Carousel Slide</h2>
+  <p class="slide-id">#cards — Card types showcase</p>
+  <div class="screenshot-container">
+    <!-- Screenshot reference: ss_3804l8hd5 — Cards on mobile -->
+  </div>
+  <div class="findings">
+    <div class="finding">
+      <span class="severity high">High</span>
+      <h3>Cards not properly centered — first card offset</h3>
+      <p>The mobile carousel renders with the first card (Tasks) pushed to center-left and the second card's edge peeking in from the right. The <code>scroll-snap-type: x mandatory</code> with <code>scroll-snap-align: center</code> should center cards, but the initial scroll position isn't set. The first card should be centered on load. Add <code>padding-left</code> equal to half the viewport minus half the card width to achieve proper centering of the first item.</p>
+    </div>
+    <div class="finding">
+      <span class="severity high">High</span>
+      <h3>Massive empty teal space above the card</h3>
+      <p>The card sits in the lower third of the content area with a large blank teal region above it. This happens because the carousel uses <code>align-items: center</code> but the card's <code>max-width: 200px</code> combined with <code>flex: 0 0 70%</code> creates a small card that doesn't fill the available height. The vertical centering makes it look lost. Consider increasing the card size or top-aligning the layout on mobile.</p>
+    </div>
+    <div class="finding">
+      <span class="severity medium">Medium</span>
+      <h3>No horizontal scroll indicator</h3>
+      <p>The carousel scrollbar is hidden (<code>scrollbar-width: none</code>) and there are no pagination dots or other affordance showing that more cards exist to the right. Users may not realize they can swipe through four different card types. Add dot indicators or a "swipe for more" hint.</p>
+    </div>
+    <div class="finding">
+      <span class="severity medium">Medium</span>
+      <h3>Card flip animation stagger may not work well</h3>
+      <p>The desktop flip stagger (<code>animation-delay</code> nth-child selectors) targets <code>.carouselItem</code>, but mobile cards use <code>.carouselItemMobile</code> which doesn't have matching stagger CSS. All mobile cards may flip simultaneously instead of one-by-one, losing the polished effect.</p>
+    </div>
+    <div class="finding">
+      <span class="severity low">Low</span>
+      <h3>Description text clips at carousel edge</h3>
+      <p>The "Actions" card's description text ("Actions are operatio...") gets clipped at the right viewport edge. This is expected during scroll, but on initial load it creates a janky impression.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== BUY ==================== -->
+<div class="slide-review">
+  <h2>6. Buy Slide</h2>
+  <p class="slide-id">#buy — Purchase CTA</p>
+  <div class="screenshot-container">
+    <!-- Screenshot reference: ss_8603nix3s — Buy on mobile -->
+  </div>
+  <div class="findings">
+    <div class="finding">
+      <span class="severity high">High</span>
+      <h3>Price is completely hidden on mobile</h3>
+      <p>The CSS rule <code>.buySlidePrice { display: none }</code> inside the mobile media query hides the $35 price tag. This is a critical omission — users see a "BUY NOW" button with no price context. This will significantly hurt conversion. The price should always be visible, especially on mobile where the buy decision happens fast.</p>
+    </div>
+    <div class="finding">
+      <span class="severity high">High</span>
+      <h3>BUY NOW button cut off at bottom edge</h3>
+      <p>The button appears partially below the viewport fold. The stacked layout (image on top, CTA pane on bottom with <code>flex: 0 0 auto</code>) pushes the button down when the product image takes most of the vertical space. The button needs to be fully visible without scrolling — consider reducing the image height or overlaying the CTA.</p>
+    </div>
+    <div class="finding">
+      <span class="severity medium">Medium</span>
+      <h3>Logo and subtext also hidden</h3>
+      <p><code>.buySlideLogoContainer</code> and <code>.buySlideSubtext</code> are set to <code>display: none</code> on mobile. This means users only see the product image and a bare "BUY NOW" button with no branding context. The "Opens Square checkout" subtext is especially important for trust — users want to know where the button takes them.</p>
+    </div>
+    <div class="finding">
+      <span class="severity medium">Medium</span>
+      <h3>Idle popup easter egg may overwhelm mobile</h3>
+      <p>The idle popup spawner at <code>scale(0.4)</code> on mobile creates miniature Win95 windows over the content. On a small screen these can obscure the BUY NOW button and product image. The popups don't have a close button and accumulate every second. Consider disabling or limiting this feature on mobile.</p>
+    </div>
+    <div class="finding">
+      <span class="severity positive">Positive</span>
+      <h3>Product image looks great</h3>
+      <p>The open box shot fills the top portion of the viewport nicely with <code>object-fit: cover</code>. The turquoise box interior with visible card decks and clickers is compelling.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== GLOBAL ISSUES ==================== -->
+<div class="slide-review">
+  <h2>7. Cross-Slide / Global Issues</h2>
+  <p class="slide-id">Issues affecting the entire mobile experience</p>
+  <div class="findings">
+    <div class="finding">
+      <span class="severity high">High</span>
+      <h3>No swipe navigation anywhere</h3>
+      <p>The entire slide deck relies on button presses to navigate, but on mobile the buttons are frequently obscured. Swipe left/right to navigate slides is the standard expectation for this type of content on mobile. Implement <code>touchstart</code>/<code>touchend</code> delta detection with a 50px threshold to trigger <code>goNext()</code>/<code>goBack()</code>.</p>
+    </div>
+    <div class="finding">
+      <span class="severity high">High</span>
+      <h3>Button bar visibility is unreliable</h3>
+      <p>The button bar uses a fixed amount of vertical space at the bottom of the window body, but the content area above it often pushes it partially or fully off-screen. The <code>flex-shrink: 0</code> on the button bar should prevent it from being compressed, but the overall <code>100dvh</code> viewport constraint combined with the title bar, bevels, and content well doesn't leave enough room. Consider making the button bar <code>position: sticky</code> at the bottom or switching to a fixed bottom bar on mobile.</p>
+    </div>
+    <div class="finding">
+      <span class="severity medium">Medium</span>
+      <h3>No mobile-specific loading state</h3>
+      <p>The Cloudinary images are large (the hero spread photo). On slower mobile connections, users may see a black rectangle for several seconds before images load. Consider adding <code>loading="eager"</code> for the hero and <code>loading="lazy"</code> for later slides, plus placeholder blur-up or a loading shimmer in the content area.</p>
+    </div>
+    <div class="finding">
+      <span class="severity medium">Medium</span>
+      <h3>Win95 chrome pixel size increases on mobile</h3>
+      <p>The <code>--px</code> variable increases from 2.5px to 3px on mobile (<code>globals.css</code> line 94-98). This makes the window bevels, title bar, and button bar consume more proportional space on an already tight mobile viewport. On a 390px-wide screen, the outer bevels alone eat ~12px total width. Consider keeping <code>--px</code> at 2px or even smaller on mobile to maximize content area.</p>
+    </div>
+    <div class="finding">
+      <span class="severity medium">Medium</span>
+      <h3>Title bar click-to-home not discoverable</h3>
+      <p>Clicking the title bar navigates to slide 0 (<code>onClick={() =&gt; changeSlide(0)}</code>), which is a useful shortcut but completely hidden. The <code>cursor: pointer</code> hint is lost on touch devices. Consider adding a small home icon or making the title bar tap behavior more obvious.</p>
+    </div>
+    <div class="finding">
+      <span class="severity low">Low</span>
+      <h3>Keyboard navigation not relevant but still active</h3>
+      <p>Arrow key handlers are bound globally. While harmless on mobile, the keyboard listener adds unnecessary overhead. Gate with <code>if (isMobile) return;</code> in the keyboard handler effect.</p>
+    </div>
+    <div class="finding">
+      <span class="severity low">Low</span>
+      <h3>Mouse velocity logo flicker runs on mobile</h3>
+      <p>The <code>requestAnimationFrame</code> loop that tracks mouse velocity and updates <code>logoFont</code> runs continuously on mobile even though there's no mouse. The velocity will always be 0 and the font won't change, but the RAF loop still ticks. Gate with <code>if (isMobile) return;</code>.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SUMMARY ==================== -->
+<div class="summary-box">
+  <h2>Priority Action Items</h2>
+  <p>Ranked by impact on mobile conversion and user experience:</p>
+  <ol class="priority-list">
+    <li><strong>Add swipe navigation.</strong> Implement touch swipe left/right across all slides. This is the single biggest gap — without it, many mobile users will get stuck on the hero slide.</li>
+    <li><strong>Fix the button bar visibility.</strong> Make navigation buttons always visible on mobile. Either use a sticky/fixed bottom bar or reduce content height to guarantee the buttons fit within 100dvh.</li>
+    <li><strong>Show the price on the Buy slide.</strong> Un-hide <code>.buySlidePrice</code> on mobile and ensure "$35" is visible above the BUY NOW button. Hidden pricing kills conversion.</li>
+    <li><strong>Fix the Cards carousel centering.</strong> Add initial padding so the first card is centered, increase card size to fill more of the teal area, and add pagination dots.</li>
+    <li><strong>Break up the Text slide wall of text.</strong> Add visual breaks, icons, or collapse the description into key bullet points with a "read more" expansion.</li>
+    <li><strong>Add captions to the Split image slides.</strong> Overlay brief descriptive text so these slides communicate product value, not just show pretty photos.</li>
+    <li><strong>Reduce Win95 chrome size on mobile.</strong> Decrease <code>--px</code> to 2px on mobile to reclaim viewport space for content.</li>
+    <li><strong>Gate desktop-only effects.</strong> Skip the mouse velocity RAF loop, keyboard listeners, and idle popup spawner on mobile for performance.</li>
+  </ol>
+</div>
+
+</div>
+</body>
+</html>

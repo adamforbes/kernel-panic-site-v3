@@ -312,12 +312,13 @@
   margin: 0 auto;
   height: 100%;
   padding: 6% 8%;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
   gap: 1.5em;
-
-  overflow-y: scroll;
+  position: relative;
 }
 
 .slideHeading {
@@ -336,6 +337,84 @@
   font-size: calc(var(--px) * 8);
   color: #d0d0d0;
   line-height: 1.6;
+}
+
+/* --- Readme Window (Learn More Pop-up) --- */
+.readmeWindow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 700px;
+  max-height: 85%;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  border-width: var(--px);
+  border-style: solid;
+  border-color: var(--color-win95-light) var(--color-win95-darkest) var(--color-win95-darkest) var(--color-win95-light);
+  background: var(--color-win95-bg);
+  padding: var(--px);
+  text-align: left;
+}
+
+.readmeWindowTitleBar {
+  background: linear-gradient(to right, #000080, #1084D0);
+  height: calc(var(--px) * 15);
+  padding: 0 calc(var(--px) * 2);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.readmeWindowTitleText {
+  color: var(--color-win95-light);
+  font-family: var(--font-title);
+  font-size: calc(var(--px) * 10);
+  line-height: calc(var(--px) * 12);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.readmeWindowCloseBtn {
+  background: var(--color-win95-bg);
+  border: var(--px) solid transparent;
+  border-color: var(--color-win95-light) var(--color-win95-darkest) var(--color-win95-darkest) var(--color-win95-light);
+  color: var(--color-black);
+  font-family: var(--font-system);
+  font-size: calc(var(--px) * 8);
+  font-weight: 700;
+  padding: 0 calc(var(--px) * 2);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.readmeWindowCloseBtn:active {
+  border-color: var(--color-win95-darkest) var(--color-win95-light) var(--color-win95-light) var(--color-win95-darkest);
+  padding: var(--px) calc(var(--px) * 2) 0;
+}
+
+.readmeWindowContent {
+  background: var(--color-white);
+  border-width: var(--px);
+  border-style: solid;
+  border-color: var(--color-win95-dark) var(--color-win95-light) var(--color-win95-light) var(--color-win95-dark);
+  margin: calc(var(--px) * 2);
+  padding: calc(var(--px) * 4);
+  overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.readmeText {
+  font-family: var(--font-system);
+  font-size: calc(var(--px) * 8);
+  color: var(--color-black);
+  line-height: 1.5;
 }
 
 /* --- Slide 3: Card carousel --- */
@@ -804,6 +883,7 @@
   font-size: calc(var(--px) * 12);
   font-weight: 700;
   line-height: 1;
+  white-space: nowrap;
   padding: calc(var(--px) * 6) calc(var(--px) * 20);
   background: var(--color-red, #cc0000);
   color: white;
@@ -869,7 +949,7 @@
   display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
 
   /* --- Layout: reduce chrome margins to give content more room --- */
   .bevelInner1 {

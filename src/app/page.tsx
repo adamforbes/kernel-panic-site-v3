@@ -48,7 +48,7 @@ const CAROUSEL_CARDS = [
 
 const CURSOR_SIZE = 96;
 const DITHER_DURATION = 200; // ms
-const MOBILE_BREAKPOINT = 768;
+const MOBILE_BREAKPOINT = 1024;
 
 // Redaction weights for logo flicker — low numbers = full serif, high = more pixelated
 const REDACTION_WEIGHTS = [
@@ -86,6 +86,7 @@ export default function Home() {
   const [cursorPos, setCursorPos] = useState({ x: -999, y: -999 });
   const [cursorVisible, setCursorVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isReadmeOpen, setIsReadmeOpen] = useState(false);
   const [logoFont, setLogoFont] = useState(REDACTION_WEIGHTS[0]);
   const [cardsFlipped, setCardsFlipped] = useState(false);
   const [idlePopups, setIdlePopups] = useState<{ id: number; x: number; y: number }[]>([]);
@@ -697,41 +698,56 @@ export default function Home() {
                           Race against a 10 minute timer in this cooperative
                           no-turns puzzle game.
                         </h1>
-                        <p className={styles.slideBody}>
-                          Race the clock as a team of processors in a digital
-                          device! In this real-time puzzle game, you have 10
-                          minutes to complete as many tasks as possible. Your goal
-                          is to satisfy Task cards by calculating specific
-                          two-digit numbers on local and shared Storage Counters.
-                          You&apos;ll calculate values using a hand of Action
-                          cards: Statements let you perform math operations to
-                          reach your target numbers whereas Accesses copy numbers
-                          between your local storage counters and the shared
-                          storage counters. Once you get the hang of things, add
-                          Danger Actions to the deck for a greater challenge! This
-                          included bonus pack introduces Bugs with inconvenient
-                          effects and Outages that trigger immediately to disrupt
-                          the entire team.
-                        </p>
-                        <p className={styles.slideBody}>
-                          There are no turns in Kernel Panic. Everyone plays
-                          simultaneously, drawing from a shared action deck and
-                          computing as quickly as they can. Collaboration is all
-                          but mandatory: Many tasks are too complex for one
-                          processor to solve alone, requiring you to compute
-                          useful numbers for teammates to use or work together on
-                          shared requirements. Just be careful&mdash;most tasks
-                          have conflicting conditions, so helping one teammate
-                          with their Task might accidentally clobber
-                          another&apos;s hard work.
-                        </p>
-                        <p className={styles.slideBody}>
-                          The game ends the moment the 10-minute timer expires.
-                          Your team&apos;s final score is based on the complexity
-                          of your completed Tasks and the number of Danger Actions
-                          successfully navigated. Every game is a race to optimize
-                          your performance and set a new high score!
-                        </p>
+
+                        <button className={styles.btn} onClick={(e) => { e.stopPropagation(); setIsReadmeOpen(true); }} style={{ marginTop: '20px' }}>
+                          LEARN MORE
+                        </button>
+                        
+                        {isReadmeOpen && (
+                          <div className={styles.readmeWindow} onClick={(e) => { e.stopPropagation(); }}>
+                            <div className={styles.readmeWindowTitleBar}>
+                              <span className={styles.readmeWindowTitleText}>readme.txt</span>
+                              <button className={styles.readmeWindowCloseBtn} aria-label="Close" onClick={(e) => { e.stopPropagation(); setIsReadmeOpen(false); }}>X</button>
+                            </div>
+                            <div className={styles.readmeWindowContent} data-win95-scroll onScroll={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()} onWheel={(e) => e.stopPropagation()}>
+                              <p className={styles.readmeText}>
+                                Race the clock as a team of processors in a digital
+                                device! In this real-time puzzle game, you have 10
+                                minutes to complete as many tasks as possible. Your goal
+                                is to satisfy Task cards by calculating specific
+                                two-digit numbers on local and shared Storage Counters.
+                                You&apos;ll calculate values using a hand of Action
+                                cards: Statements let you perform math operations to
+                                reach your target numbers whereas Accesses copy numbers
+                                between your local storage counters and the shared
+                                storage counters. Once you get the hang of things, add
+                                Danger Actions to the deck for a greater challenge! This
+                                included bonus pack introduces Bugs with inconvenient
+                                effects and Outages that trigger immediately to disrupt
+                                the entire team.
+                              </p>
+                              <p className={styles.readmeText}>
+                                There are no turns in Kernel Panic. Everyone plays
+                                simultaneously, drawing from a shared action deck and
+                                computing as quickly as they can. Collaboration is all
+                                but mandatory: Many tasks are too complex for one
+                                processor to solve alone, requiring you to compute
+                                useful numbers for teammates to use or work together on
+                                shared requirements. Just be careful&mdash;most tasks
+                                have conflicting conditions, so helping one teammate
+                                with their Task might accidentally clobber
+                                another&apos;s hard work.
+                              </p>
+                              <p className={styles.readmeText}>
+                                The game ends the moment the 10-minute timer expires.
+                                Your team&apos;s final score is based on the complexity
+                                of your completed Tasks and the number of Danger Actions
+                                successfully navigated. Every game is a race to optimize
+                                your performance and set a new high score!
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -859,13 +875,30 @@ export default function Home() {
 
             {/* Button bar */}
             <div className={styles.buttonBar}>
-              <a
-                href="https://redpupgames.square.site/"
-                className={styles.btn}
-                style={currentSlideId === 'buy' ? { visibility: 'hidden' } : undefined}
-              >
-                <u>B</u>UY NOW
-              </a>
+              {currentSlideId === 'buy' ? (
+                <a
+                  href="https://redpupgames.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '0 8px',
+                    transition: 'opacity 0.1s'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.opacity = '0.8'}
+                  onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                >
+                  <img src="https://res.cloudinary.com/dkcuvaird/image/upload/v1774826320/VECTOR__REDPUP_MAIN_COLOR_h5v501.svg" alt="Red Pup Games" style={{ height: '24px', width: 'auto' }} />
+                </a>
+              ) : (
+                <a
+                  href="https://redpupgames.square.site/"
+                  className={styles.btn}
+                >
+                  <u>B</u>UY NOW
+                </a>
+              )}
               <div className={styles.navButtons}>
                 <button
                   className={styles.btn}

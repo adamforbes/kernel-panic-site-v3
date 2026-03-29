@@ -34,6 +34,7 @@
   cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  white-space: nowrap;
 }
 
 .buyButton:active {
@@ -45,4 +46,12 @@
   font-size: 11px;
   color: var(--color-win95-dark);
   margin-top: 12px;
+}
+
+@media (max-width: 600px) {
+  .buyButton {
+    display: block;
+    width: 100%;
+    padding: 12px 0;
+  }
 }

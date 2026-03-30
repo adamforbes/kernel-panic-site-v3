@@ -46,7 +46,7 @@ const CAROUSEL_CARDS = [
   },
 ];
 
-const CURSOR_SIZE = 96;
+const CURSOR_SIZE = 28;
 const DITHER_DURATION = 200; // ms
 const MOBILE_BREAKPOINT = 1024;
 
@@ -435,22 +435,53 @@ export default function Home() {
 
   const [inBackZone, setInBackZone] = useState(false);
 
-  const handleContentMouseMove = useCallback((e: React.MouseEvent) => {
+  const handleViewportMouseMove = useCallback((e: React.MouseEvent) => {
     if (isMobile) return;
     setCursorPos({ x: e.clientX, y: e.clientY });
-    setCursorVisible(true);
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    setInBackZone(x < 0.25);
+    
+    // Check if hovered element is an interactive button or link
+    const target = e.target as HTMLElement;
+    const isInteractive = !!target.closest('button, a, [role="button"]');
+    setCursorVisible(!isInteractive);
   }, [isMobile]);
 
-  const handleContentMouseLeave = useCallback(() => {
+  const handleViewportMouseLeave = useCallback(() => {
     if (isMobile) return;
     setCursorVisible(false);
   }, [isMobile]);
 
+  const cursorSrc = '/cursors/win95_arrow.svg';
+
+  const mouseStateRef = useRef({ x: -999, y: -999, visible: false, src: '' });
+  const [cursorTrail, setCursorTrail] = useState<{ id: number; x: number; y: number; src: string; timestamp: number }[]>([]);
+  const trailIdRef = useRef(0);
+
+  useEffect(() => {
+    mouseStateRef.current = { x: cursorPos.x, y: cursorPos.y, visible: cursorVisible, src: cursorSrc };
+  }, [cursorPos, cursorVisible, cursorSrc]);
+
+  useEffect(() => {
+    if (isMobile) return;
+    const interval = setInterval(() => {
+      const ms = mouseStateRef.current;
+      const now = Date.now();
+      if (ms.visible) {
+        setCursorTrail(prev => {
+          const next = [...prev, { id: trailIdRef.current++, x: ms.x, y: ms.y, src: ms.src, timestamp: now }];
+          return next.filter(item => now - item.timestamp <= 500); // exactly 500ms history
+        });
+      } else {
+        setCursorTrail(prev => {
+          if (prev.length === 0) return prev;
+          return prev.filter(item => now - item.timestamp <= 500);
+        });
+      }
+    }, 10);
+    return () => clearInterval(interval);
+  }, [isMobile]);
+
   return (
-    <div className={styles.viewport} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+    <div className={styles.viewport} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} onMouseMove={handleViewportMouseMove} onMouseLeave={handleViewportMouseLeave}>
       {/* Outer bevel layer 1: white top-left, black bottom-right */}
       <div className={styles.bevelOuter1}>
         {/* Outer bevel layer 2: lighter gray top-left, dark gray bottom-right */}
@@ -458,9 +489,9 @@ export default function Home() {
           {/* Window body — gray chrome area */}
           <div className={styles.windowBody}>
             {/* Title bar */}
-            <div className={styles.titleBar} onClick={() => changeSlide(0)} style={{ cursor: 'pointer' }}>
+            <div className={styles.titleBar}>
               <img src="/kp-icon.svg" alt="" className={styles.titleIcon} />
-              <span className={styles.titleText}>A:\KERNEL_PANIC</span>
+              <span className={styles.titleText} onClick={() => changeSlide(0)} style={{ cursor: 'pointer' }} role="button">A:\KERNEL_PANIC</span>
             </div>
 
             {/* Content well */}
@@ -474,8 +505,6 @@ export default function Home() {
                   if (x < 0.25) { if (!isFirst) goBack(); }
                   else { if (!isLast) goNext(); }
                 }}
-                onMouseMove={handleContentMouseMove}
-                onMouseLeave={handleContentMouseLeave}
               >
                 {ditherPhase !== 'idle' && (
                   <div
@@ -536,8 +565,6 @@ export default function Home() {
               /* Buy slide — image left, Win95 CTA window right */
               <div
                 className={styles.buySlideContainer}
-                onMouseMove={handleContentMouseMove}
-                onMouseLeave={handleContentMouseLeave}
               >
                 {ditherPhase !== 'idle' && (
                   <div
@@ -654,8 +681,6 @@ export default function Home() {
                       if (x < 0.25 && !isFirst) goBack();
                       else if (!isLast) goNext();
                     }}
-                    onMouseMove={handleContentMouseMove}
-                    onMouseLeave={handleContentMouseLeave}
                   >
                     {/* Dither transition overlay */}
                     {ditherPhase !== 'idle' && (
@@ -925,22 +950,23 @@ export default function Home() {
           </div>
         </div>
       </div>
-      {/* Custom oversized cursor (hidden on mobile) */}
-      {!isMobile && cursorVisible && (() => {
-        const cursorMap: Record<string, string> = {
-          hero: '/cursors/register_private.svg',
-          text: '/cursors/register_cyan.svg',
-          split: '/cursors/register_magenta.svg',
-          splitL: '/cursors/register_magenta.svg',
-          splitR: '/cursors/register_magenta.svg',
-          cards: '/cursors/register_yellow.svg',
-          buy: '/cursors/register_private.svg',
-        };
-        const prevSlideId = currentSlide > 0 ? slides[currentSlide - 1] : null;
-        const cursorSrc = (inBackZone && !isFirst && prevSlideId)
-          ? cursorMap[prevSlideId]
-          : cursorMap[currentSlideId];
-        return <img
+      {/* Custom oversized trailing cursor (hidden on mobile) */}
+      {!isMobile && cursorTrail.map((ghost) => (
+        <img
+          key={ghost.id}
+          src={ghost.src}
+          alt=""
+          className={styles.customCursor}
+          style={{
+            left: ghost.x,
+            top: ghost.y,
+            width: CURSOR_SIZE,
+            height: CURSOR_SIZE,
+          }}
+        />
+      ))}
+      {!isMobile && cursorVisible && (
+        <img
           src={cursorSrc}
           alt=""
           className={styles.customCursor}
@@ -949,9 +975,10 @@ export default function Home() {
             top: cursorPos.y,
             width: CURSOR_SIZE,
             height: CURSOR_SIZE,
+            zIndex: 10000,
           }}
-        />;
-      })()}
+        />
+      )}
     </div>
   );
 }

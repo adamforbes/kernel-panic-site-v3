@@ -779,7 +779,14 @@ export default function Home() {
 
                     {/* Card carousel */}
                     {currentSlideId === 'cards' && (
-                      <div className={styles.slideCarousel} ref={carouselRef}>
+                      <div 
+                        className={styles.slideCarousel} 
+                        ref={carouselRef}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onTouchMove={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         {/* Top row: cards, bottom-aligned */}
                         <div className={styles.carouselCardsRow}>
                           {CAROUSEL_CARDS.map((card, i) => (
@@ -880,14 +887,7 @@ export default function Home() {
                   href="https://redpupgames.com/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    padding: '0 8px',
-                    transition: 'opacity 0.1s'
-                  }}
-                  onMouseOver={e => e.currentTarget.style.opacity = '0.8'}
-                  onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                  className={styles.publisherLogoLink}
                 >
                   <img src="https://res.cloudinary.com/dkcuvaird/image/upload/v1774826320/VECTOR__REDPUP_MAIN_COLOR_h5v501.svg" alt="Red Pup Games" style={{ height: '24px', width: 'auto' }} />
                 </a>

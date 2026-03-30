@@ -917,6 +917,17 @@
   margin-top: 2px;
 }
 
+.publisherLogoLink {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  transition: opacity 0.1s;
+}
+
+.publisherLogoLink:hover {
+  opacity: 0.8;
+}
+
 /* =============================================
    IDLE POPUP WINDOWS (buy slide easter egg)
    ============================================= */
@@ -926,15 +937,8 @@
   z-index: 100;
   text-decoration: none;
   cursor: pointer;
-  animation: idlePopupAppear 0.15s steps(3) forwards;
   transform-origin: top left;
   transform: scale(0.55);
-}
-
-@keyframes idlePopupAppear {
-  0%   { transform: scale(0); opacity: 0; }
-  50%  { transform: scale(0.6); opacity: 1; }
-  100% { transform: scale(0.55); opacity: 1; }
 }
 
 /* =============================================
@@ -1186,10 +1190,15 @@
 
   .mobileBuyPrice {
     font-family: var(--font-system);
-    font-size: clamp(36px, 10vw, 48px);
+    font-size: 42px;
     font-weight: 700;
     color: #000;
     margin: 0;
+    flex-shrink: 0;
+  }
+
+  .mobileBuyCta .buySlideCtaButton {
+    flex: 1;
   }
 
   .idlePopup {

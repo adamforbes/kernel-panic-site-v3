@@ -4,25 +4,25 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import styles from './page.module.css';
 
 const HERO_IMAGE =
-  'https://res.cloudinary.com/dkcuvaird/image/upload/v1774057287/spread-of-cards_kernel-panic_big_2_jfrhya.png';
+  'https://res.cloudinary.com/dkcuvaird/image/upload/f_auto,q_auto,w_1600/v1774057287/spread-of-cards_kernel-panic_big_2_jfrhya.png';
 const SPLIT_IMAGE_LEFT =
-  'https://res.cloudinary.com/dkcuvaird/image/upload/v1774057297/hand-grabbing_kernal-panic_szoeuv.jpg';
+  'https://res.cloudinary.com/dkcuvaird/image/upload/f_auto,q_auto,w_800/v1774057297/hand-grabbing_kernal-panic_szoeuv.jpg';
 const SPLIT_IMAGE_RIGHT =
-  'https://res.cloudinary.com/dkcuvaird/image/upload/v1774057296/hand-full-of-clickers_kernel-panic_rc4fd9.jpg';
+  'https://res.cloudinary.com/dkcuvaird/image/upload/f_auto,q_auto,w_800/v1774057296/hand-full-of-clickers_kernel-panic_rc4fd9.jpg';
 const CARD_PLACEHOLDER =
-  'https://res.cloudinary.com/dkcuvaird/image/upload/v1768415583/statement__2_fhpvuq.png';
+  'https://res.cloudinary.com/dkcuvaird/image/upload/f_auto,q_auto,w_600/v1768415583/statement__2_fhpvuq.png';
 const CARD_BACK =
-  'https://res.cloudinary.com/dkcuvaird/image/upload/v1768415599/card-back_lnlye1.png';
+  'https://res.cloudinary.com/dkcuvaird/image/upload/f_auto,q_auto,w_600/v1768415599/card-back_lnlye1.png';
 const PRODUCT_IMAGE =
-  'https://res.cloudinary.com/dkcuvaird/image/upload/v1774057309/box-open_kernel-panic_wozhcl.jpg';
+  'https://res.cloudinary.com/dkcuvaird/image/upload/f_auto,q_auto,w_1200/v1774057309/box-open_kernel-panic_wozhcl.jpg';
 const CARD_BACK_TASK =
-  'https://res.cloudinary.com/dkcuvaird/image/upload/v1768417735/card-back_task_f0xo5c.png';
+  'https://res.cloudinary.com/dkcuvaird/image/upload/f_auto,q_auto,w_600/v1768417735/card-back_task_f0xo5c.png';
 
 const CAROUSEL_CARDS = [
   {
     label: 'Tasks',
     desc: 'Complete tasks to earn chips for your team. Finish yours solo or help others with theirs, all in parallel.',
-    image: 'https://res.cloudinary.com/dkcuvaird/image/upload/v1768417762/task-16_pmqvfh.png',
+    image: 'https://res.cloudinary.com/dkcuvaird/image/upload/f_auto,q_auto,w_600/v1768417762/task-16_pmqvfh.png',
     back: CARD_BACK_TASK,
     square: true,
   },
@@ -35,13 +35,13 @@ const CAROUSEL_CARDS = [
   {
     label: 'Bugs',
     desc: 'Brace yourself for the unexpected. Bugs add chaos to your counters. Or are they features?',
-    image: 'https://res.cloudinary.com/dkcuvaird/image/upload/v1768415593/bug-3_afurnf.png',
+    image: 'https://res.cloudinary.com/dkcuvaird/image/upload/f_auto,q_auto,w_600/v1768415593/bug-3_afurnf.png',
     square: false,
   },
   {
     label: 'Outages',
     desc: 'Emergency! Play this immediately. Hopefully your team is prepared.',
-    image: 'https://res.cloudinary.com/dkcuvaird/image/upload/v1768415616/outage-2_ewi3nj.png',
+    image: 'https://res.cloudinary.com/dkcuvaird/image/upload/f_auto,q_auto,w_600/v1768415616/outage-2_ewi3nj.png',
     square: false,
   },
 ];
@@ -90,7 +90,6 @@ export default function Home() {
   const [logoFont, setLogoFont] = useState(REDACTION_WEIGHTS[0]);
   const [cardsFlipped, setCardsFlipped] = useState(false);
   const [idlePopups, setIdlePopups] = useState<{ id: number; x: number; y: number }[]>([]);
-  const [activeCarouselCard, setActiveCarouselCard] = useState(0);
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
   const idleTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const spawnTimerRef = useRef<ReturnType<typeof setInterval>>();
@@ -126,7 +125,17 @@ export default function Home() {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             const idx = Number((entry.target as HTMLElement).dataset.carouselItem);
-            if (!isNaN(idx)) setActiveCarouselCard(idx);
+            if (!isNaN(idx)) {
+              // Update dots directly via DOM to avoid React re-renders which interrupt Safari native scroll-snap
+              const dots = document.querySelectorAll(`[data-dot-index]`);
+              dots.forEach(dot => {
+                if (Number((dot as HTMLElement).dataset.dotIndex) === idx) {
+                  dot.classList.add(styles.carouselDotActive);
+                } else {
+                  dot.classList.remove(styles.carouselDotActive);
+                }
+              });
+            }
           }
         });
       },
@@ -808,7 +817,6 @@ export default function Home() {
                         className={styles.slideCarousel} 
                         ref={carouselRef}
                         onTouchStart={(e) => e.stopPropagation()}
-                        onTouchMove={(e) => e.stopPropagation()}
                         onTouchEnd={(e) => e.stopPropagation()}
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -881,17 +889,23 @@ export default function Home() {
                             >{card.desc}</p>
                           </div>
                         ))}
-                        {/* Pagination dots (mobile only, rendered via CSS) */}
-                        <div className={styles.carouselDots}>
-                          {CAROUSEL_CARDS.map((_, i) => (
-                            <span
-                              key={i}
-                              className={`${styles.carouselDot} ${activeCarouselCard === i ? styles.carouselDotActive : ''}`}
-                            />
-                          ))}
-                        </div>
                       </div>
                     )}
+
+                    {/* Pagination dots (mobile only, rendered via CSS) */}
+                    {currentSlideId === 'cards' && (
+                      <div className={styles.carouselDots}>
+                        {CAROUSEL_CARDS.map((_, i) => (
+                          <span
+                            key={i}
+                            data-dot-index={i}
+                            className={`${styles.carouselDot} ${i === 0 ? styles.carouselDotActive : ''}`}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+
                   </div>
                 </div>
               </div>

@@ -447,7 +447,7 @@ export default function Home() {
   const handleViewportMouseMove = useCallback((e: React.MouseEvent) => {
     if (isMobile) return;
     setCursorPos({ x: e.clientX, y: e.clientY });
-    
+
     // Check if hovered element is an interactive button or link
     const target = e.target as HTMLElement;
     const isInteractive = !!target.closest('button, a, [role="button"]');
@@ -517,9 +517,8 @@ export default function Home() {
               >
                 {ditherPhase !== 'idle' && (
                   <div
-                    className={`${styles.ditherOverlay} ${
-                      ditherPhase === 'out' ? styles.ditherOut : styles.ditherIn
-                    }`}
+                    className={`${styles.ditherOverlay} ${ditherPhase === 'out' ? styles.ditherOut : styles.ditherIn
+                      }`}
                   />
                 )}
                 <div
@@ -540,7 +539,7 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                  <div className={styles.imageCaption}>Play action cards as fast as you can</div>
+                  <div className={styles.imageCaption}>Play cards as fast as you can</div>
                 </div>
 
                 {/* Wire + Lock connector — flex child filling the gap */}
@@ -567,7 +566,7 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                  <div className={styles.imageCaption}>Track scores with clicker tokens</div>
+                  <div className={styles.imageCaption}>Track scores with 3D printed counters</div>
                 </div>
               </div>
             ) : currentSlideId === 'buy' ? (
@@ -577,9 +576,8 @@ export default function Home() {
               >
                 {ditherPhase !== 'idle' && (
                   <div
-                    className={`${styles.ditherOverlay} ${
-                      ditherPhase === 'out' ? styles.ditherOut : styles.ditherIn
-                    }`}
+                    className={`${styles.ditherOverlay} ${ditherPhase === 'out' ? styles.ditherOut : styles.ditherIn
+                      }`}
                   />
                 )}
                 {/* Left: product image — flexible width, fully visible */}
@@ -694,9 +692,8 @@ export default function Home() {
                     {/* Dither transition overlay */}
                     {ditherPhase !== 'idle' && (
                       <div
-                        className={`${styles.ditherOverlay} ${
-                          ditherPhase === 'out' ? styles.ditherOut : styles.ditherIn
-                        }`}
+                        className={`${styles.ditherOverlay} ${ditherPhase === 'out' ? styles.ditherOut : styles.ditherIn
+                          }`}
                       />
                     )}
 
@@ -736,7 +733,7 @@ export default function Home() {
                         <button className={styles.btn} onClick={(e) => { e.stopPropagation(); setIsReadmeOpen(true); }} style={{ marginTop: '20px' }}>
                           LEARN MORE
                         </button>
-                        
+
                         {isReadmeOpen && (
                           <div className={styles.readmeWindow} onClick={(e) => { e.stopPropagation(); }}>
                             <div className={styles.readmeWindowTitleBar}>
@@ -813,8 +810,8 @@ export default function Home() {
 
                     {/* Card carousel */}
                     {currentSlideId === 'cards' && (
-                      <div 
-                        className={styles.slideCarousel} 
+                      <div
+                        className={styles.slideCarousel}
                         ref={carouselRef}
                         onTouchStart={(e) => e.stopPropagation()}
                         onTouchEnd={(e) => e.stopPropagation()}
